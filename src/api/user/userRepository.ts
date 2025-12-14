@@ -1,8 +1,8 @@
 import { prisma } from "@/common/lib/prisma";
-import { UserResponse, CreateUser } from "./userModel";
+import { UserResponse, CreateUser, User } from "./userModel";
 
 export class UserRepository {
-    async findUserByEmail(email: string): Promise<UserResponse | null> {
+    async findUserByEmail(email: string): Promise<User | null> {
         return prisma.user.findUnique({ where: { email } });
     }
 
@@ -17,5 +17,9 @@ export class UserRepository {
                  isActive: true
              }
         });
+    }
+
+    async createRefreshToken(userId: string, token: string, expiresAt: Date, ip?: string, userAgent?: string): Promise<void> {
+        await prisma.refreshToken.create({ data: { token, userId, ip, userAgent, expiresAt } });
     }
 }
