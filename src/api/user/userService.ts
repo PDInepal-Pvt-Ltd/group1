@@ -1,16 +1,23 @@
 import { StatusCodes } from "http-status-codes";
 import type { UserResponse, CreateUser, LoginUser, LoginResponse } from "./userModel";
 import { UserRepository } from "./userRepository";
+import { AuditLogRepository } from "../auditlog/auditlogRepository";
 import { ServiceResponse } from "@/common/utils/serviceResponse";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { redisClient } from "@/common/lib/redis";
+import { AUTH_AUDIT_ACTIONS } from "@/common/constants/authAuditActions";
 
 export class UserService {
     private userRepository: UserRepository;
+    private auditLogRepository: AuditLogRepository;
 
-    constructor(userRepository: UserRepository = new UserRepository()) {
+    constructor(
+        userRepository: UserRepository = new UserRepository(),
+        auditLogRepository: AuditLogRepository = new AuditLogRepository()
+    ) {
         this.userRepository = userRepository;
+        this.auditLogRepository = auditLogRepository;
     }
 
     async createUser(data: CreateUser): Promise<ServiceResponse<UserResponse | null>> {
@@ -33,6 +40,15 @@ export class UserService {
         try {
             const user = await this.userRepository.findUserByEmail(data.email);
             if (!user) {
+                await this.auditLogRepository.createAuditLog({
+                    userId: null,
+                    action: AUTH_AUDIT_ACTIONS.LOGIN_FAILURE,
+                    resourceType: "User",
+                    resourceId: null,
+                    payload: { email: data.email, reason: "User not found" },
+                    ip: ip ?? null,
+                    userAgent: userAgent ?? null,
+                });
                 return ServiceResponse.failure("User not found", null, StatusCodes.NOT_FOUND);
             }
 
@@ -59,7 +75,7 @@ export class UserService {
         }
     }
 
-    async refreshSession(refreshToken: string,ip?: string, userAgent?: string): Promise<ServiceResponse<{ accessToken: string, refreshToken: string } | null>> {
+    async refreshSession(refreshToken: string, ip?: string, userAgent?: string): Promise<ServiceResponse<{ accessToken: string, refreshToken: string } | null>> {
         try {
             const refreshTokenData = await this.userRepository.findValidRefreshToken(refreshToken);
             if (!refreshTokenData || refreshTokenData.revoked) {
@@ -76,13 +92,13 @@ export class UserService {
                 return ServiceResponse.failure("User Account is Inactive", null, StatusCodes.UNAUTHORIZED);
             }
 
-            if(ip && refreshTokenData.ip && ip !== refreshTokenData.ip) {
+            if (ip && refreshTokenData.ip && ip !== refreshTokenData.ip) {
                 console.warn(`SECURITY ALERT: IP changed for token ${refreshTokenData.id}. Old IP: ${refreshTokenData.ip}, New IP: ${ip}`);
                 await this.userRepository.revokeAllUserTokens(refreshTokenData.user.id);
                 return ServiceResponse.failure("Suspicious location change detected. Re-login required.", null, StatusCodes.FORBIDDEN);
             }
 
-            if(userAgent && refreshTokenData.userAgent && userAgent !== refreshTokenData.userAgent) {
+            if (userAgent && refreshTokenData.userAgent && userAgent !== refreshTokenData.userAgent) {
                 console.warn(`SECURITY ALERT: User Agent changed for token ${refreshTokenData.id}. Old User Agent: ${refreshTokenData.userAgent}, New User Agent: ${userAgent}`);
                 await this.userRepository.revokeAllUserTokens(refreshTokenData.user.id);
                 return ServiceResponse.failure("Suspicious device change detected. Re-login required.", null, StatusCodes.FORBIDDEN);
@@ -112,7 +128,7 @@ export class UserService {
                 const timeToLive = decodedToken.exp - currentTimeInSeconds;
                 const TOKEN_PREFIX = 'revoked:access:'
                 const key = `${TOKEN_PREFIX}${accessToken}`;
-                redisClient.set(key, 'true', { EX: timeToLive*1000, NX: true });
+                redisClient.set(key, 'true', { EX: timeToLive * 1000, NX: true });
             }
             return ServiceResponse.success("Logout successful", null, StatusCodes.OK);
         } catch (error) {
