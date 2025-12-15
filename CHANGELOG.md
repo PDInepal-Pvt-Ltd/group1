@@ -9,6 +9,48 @@ All notable changes to this project will be documented in this file.
 ## 2025-12-15
 
 
+- Correct rate limiter keyGenerator for IPv6 safety([a5d0ace](https://github.com/AAYUSKARKI/RestaurantQRify/commits/a5d0ace0a2bd85045709cc4a5edf11cfa084f509) )
+
+
+
+## 2025-12-15
+
+
+- Add rate limit on auth to prevent session hijacking and brute-force attacks([5c59e5a](https://github.com/AAYUSKARKI/RestaurantQRify/commits/5c59e5a6b41070749c5d07c309fa421dc3869de9) )
+
+
+
+## 2025-12-15
+
+
+- Updated changelog([e87e43f](https://github.com/AAYUSKARKI/RestaurantQRify/commits/e87e43fd7a2238665c304dd6860b44f6ef1d2bb0) )
+
+
+
+## 2025-12-15
+
+
+- Add auth rate limiter([9e70ab6](https://github.com/AAYUSKARKI/RestaurantQRify/commits/9e70ab6e726ab0a26ec2b4a54bf1e308cb2f0682) )
+
+
+
+## 2025-12-15
+
+
+- Add auth rate limit in env([1b9af9c](https://github.com/AAYUSKARKI/RestaurantQRify/commits/1b9af9ca1b04b342bd599616693ba92edc8e4ed2) )
+
+
+
+## 2025-12-15
+
+
+- Update readme([5a05828](https://github.com/AAYUSKARKI/RestaurantQRify/commits/5a058286fd7f0868fb5cf3c98724f17c38f35a89) )
+
+
+
+## 2025-12-15
+
+
 - Update readme file([738e42f](https://github.com/AAYUSKARKI/RestaurantQRify/commits/738e42fd0c596ed8ecc903299816c274aefca8e5) )
 
 
