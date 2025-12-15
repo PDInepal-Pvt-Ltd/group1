@@ -13,12 +13,12 @@ const logger = winston.createLogger({
   ),
   defaultMeta: { service: 'your-service-name' },
   transports: [
-    new winston.transports.DailyRotateFile({
+    new DailyRotateFile({
       filename: 'logs/%DATE%-combined.log',
       datePattern: 'YYYY-MM-DD',
       maxFiles: '14d'
     }),
-    new winston.transports.DailyRotateFile({
+    new DailyRotateFile({
       level: 'error',
       filename: 'logs/%DATE%-error.log',
       datePattern: 'YYYY-MM-DD'
