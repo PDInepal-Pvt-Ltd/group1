@@ -9,6 +9,27 @@ All notable changes to this project will be documented in this file.
 ## 2025-12-15
 
 
+- Feat/user into feat/auditlog([b505b9d](https://github.com/AAYUSKARKI/RestaurantQRify/commits/b505b9d9fa0a1183286300736620af20bc31f6fe) )
+
+
+
+## 2025-12-15
+
+
+- Feat/user into feat/auditlog([70962d1](https://github.com/AAYUSKARKI/RestaurantQRify/commits/70962d12671fb2f0e49fb3589935fe1d77f1b632) )
+
+
+
+## 2025-12-15
+
+
+- Update changelog([930b02b](https://github.com/AAYUSKARKI/RestaurantQRify/commits/930b02b094e48851cac399329250a00701ffa35c) )
+
+
+
+## 2025-12-15
+
+
 - Correct rate limiter keyGenerator for IPv6 safety([a5d0ace](https://github.com/AAYUSKARKI/RestaurantQRify/commits/a5d0ace0a2bd85045709cc4a5edf11cfa084f509) )
 
 
