@@ -4,8 +4,9 @@ import { UserRepository } from "./userRepository";
 import { ServiceResponse } from "@/common/utils/serviceResponse";
 import { AuditLogQueue } from "@/queues/instances/auditlogQueue";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import { redisClient } from "@/common/lib/redis";
+import { v4 as uuidv4 } from "uuid";
+import jwt, {Secret} from "jsonwebtoken";
+import { tokenBlacklistService } from "@/common/services/tokenBlacklistService";
 import { AUTH_AUDIT_ACTIONS } from "@/common/constants/authAuditActions";
 import logger from "@/common/utils/logger";
 
@@ -26,6 +27,15 @@ export class UserService {
 
             const hashedPassword = await bcrypt.hash(data.password, 10);
             const user = await this.userRepository.createUser({ ...data, password: hashedPassword });
+            await this.auditLogQueue.add("createAuditLog", {
+                userId: user.id,
+                action: AUTH_AUDIT_ACTIONS.ACCOUNT_CREATED,
+                resourceType: "User",
+                resourceId: user.id,
+                payload: user,
+                ip: null,
+                userAgent: null,
+            });
             return ServiceResponse.success<UserResponse>("User created successfully", user);
         } catch (error) {
             logger.error("Error creating user:", error);
@@ -76,8 +86,8 @@ export class UserService {
                 return ServiceResponse.failure("User Account is Inactive", null, StatusCodes.UNAUTHORIZED);
             }
 
-            const refreshToken = jwt.sign({ userId: user.id }, process.env.JWT_SECRET as string, { expiresIn: "7d" });
-            const accessToken = jwt.sign({ userId: user.id }, process.env.JWT_SECRET as string, { expiresIn: "45m" });
+            const refreshToken = jwt.sign({ userId: user.id, role: user.role, jti: uuidv4() }, process.env.REFRESH_TOKEN_SECRET as Secret, { expiresIn: "7d" }); 
+            const accessToken = jwt.sign({ userId: user.id, role: user.role, jti: uuidv4() }, process.env.ACCESS_TOKEN_SECRET as Secret, { expiresIn: "45m" });
             const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
             await this.userRepository.createRefreshToken(user.id, refreshToken, expiresAt, ip, userAgent);
@@ -117,12 +127,30 @@ export class UserService {
             }
 
             if(ip && refreshTokenData.ip && ip !== refreshTokenData.ip) {
+                await this.auditLogQueue.add("createAuditLog", {
+                    userId: refreshTokenData.user.id,
+                    action: AUTH_AUDIT_ACTIONS.SUSPICIOUS_ACTIVITY,
+                    resourceType: "User",
+                    resourceId: refreshTokenData.user.id,
+                    payload: { email: refreshTokenData.user.email, reason: "Suspicious location change detected" },
+                    ip: ip ?? null,
+                    userAgent: userAgent ?? null,
+                });
                 console.warn(`SECURITY ALERT: IP changed for token ${refreshTokenData.id}. Old IP: ${refreshTokenData.ip}, New IP: ${ip}`);
                 await this.userRepository.revokeAllUserTokens(refreshTokenData.user.id);
                 return ServiceResponse.failure("Suspicious location change detected. Re-login required.", null, StatusCodes.FORBIDDEN);
             }
 
             if(userAgent && refreshTokenData.userAgent && userAgent !== refreshTokenData.userAgent) {
+                await this.auditLogQueue.add("createAuditLog", {
+                    userId: refreshTokenData.user.id,
+                    action: AUTH_AUDIT_ACTIONS.SUSPICIOUS_ACTIVITY,
+                    resourceType: "User",
+                    resourceId: refreshTokenData.user.id,
+                    payload: { email: refreshTokenData.user.email, reason: "Suspicious device change detected" },
+                    ip: ip ?? null,
+                    userAgent: userAgent ?? null,
+                });
                 console.warn(`SECURITY ALERT: User Agent changed for token ${refreshTokenData.id}. Old User Agent: ${refreshTokenData.userAgent}, New User Agent: ${userAgent}`);
                 await this.userRepository.revokeAllUserTokens(refreshTokenData.user.id);
                 return ServiceResponse.failure("Suspicious device change detected. Re-login required.", null, StatusCodes.FORBIDDEN);
@@ -130,10 +158,21 @@ export class UserService {
 
             await this.userRepository.revokeSingleToken(refreshToken);
 
-            const newRefreshToken = jwt.sign({ userId: refreshTokenData.user.id }, process.env.JWT_SECRET as string, { expiresIn: "7d" });
+            const newRefreshToken = jwt.sign({ userId: refreshTokenData.user.id, role: refreshTokenData.user.role, jti: uuidv4() }, process.env.REFRESH_TOKEN_SECRET as string, { expiresIn: "7d" });
             const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
             await this.userRepository.createRefreshToken(refreshTokenData.user.id, newRefreshToken, expiresAt, ip, userAgent);
-            const accessToken = jwt.sign({ userId: refreshTokenData.user.id }, process.env.JWT_SECRET as string, { expiresIn: "45m" });
+            const accessToken = jwt.sign({ userId: refreshTokenData.user.id, role: refreshTokenData.user.role, jti: uuidv4() }, process.env.ACCESS_TOKEN_SECRET as string, { expiresIn: "45m" });
+
+            await this.auditLogQueue.add("createAuditLog", {
+                userId: refreshTokenData.user.id,
+                action: AUTH_AUDIT_ACTIONS.REFRESH_SESSION,
+                resourceType: "User",
+                resourceId: refreshTokenData.user.id,
+                payload: { email: refreshTokenData.user.email },
+                ip: ip ?? null,
+                userAgent: userAgent ?? null,
+            });
+
             return ServiceResponse.success<{ accessToken: string, refreshToken: string }>("Session refreshed successfully", { accessToken, refreshToken: newRefreshToken }, StatusCodes.OK);
         } catch (error) {
             logger.error("Error refreshing session:", error);
@@ -145,15 +184,25 @@ export class UserService {
         try {
             await this.userRepository.revokeSingleToken(refreshToken);
 
-            const decodedToken = jwt.decode(accessToken) as { exp?: number };
+            const decodedToken = jwt.decode(accessToken) as { exp?: number, jti?: string, userId?: string };
 
-            if (decodedToken?.exp) {
+            if (decodedToken?.exp && decodedToken.jti) {
                 const currentTimeInSeconds = Math.floor(Date.now() / 1000);
                 const timeToLive = decodedToken.exp - currentTimeInSeconds;
-                const TOKEN_PREFIX = 'revoked:access:'
-                const key = `${TOKEN_PREFIX}${accessToken}`;
-                redisClient.set(key, 'true', { EX: timeToLive*1000, NX: true });
+                const tokenId = decodedToken.jti;
+                await tokenBlacklistService.blacklistToken(tokenId,timeToLive*1000);
             }
+
+            await this.auditLogQueue.add("createAuditLog", {
+                userId: null,
+                action: AUTH_AUDIT_ACTIONS.LOGOUT,
+                resourceType: "User",
+                resourceId: null,
+                payload: { refreshToken },
+                ip: null,
+                userAgent: null,
+            });
+
             return ServiceResponse.success("Logout successful", null, StatusCodes.OK);
         } catch (error) {
             logger.error("Error logging out user:", error);

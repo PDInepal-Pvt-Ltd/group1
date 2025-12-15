@@ -2,14 +2,13 @@ import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { StatusCodes } from "http-status-codes";
 import { ServiceResponse, handleServiceResponse } from "@/common/utils/serviceResponse";
-import { UserRepository } from "@/api/user/userRepository";
-import { redisClient } from "../lib/redis";
+import { tokenBlacklistService } from "../services/tokenBlacklistService";
 import logger from "../utils/logger";
-
-const userRepository = new UserRepository();
 
 interface JWTPayload {
   userId: string;
+  role: string;
+  jti: string;
   iat?: number;
   exp?: number;
 }
@@ -37,9 +36,10 @@ export const verifyJWT = async (req: Request, res: Response, next: NextFunction)
     }
 
     const accessToken = authHeader.split(" ")[1];
-    const TOKEN_PREFIX = 'revoked:access:'
-    const key = `${TOKEN_PREFIX}${accessToken}`;
-    const isBlacklistedToken = await redisClient.get(key);
+    const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET as string) as JWTPayload;
+    const TOKEN_ID = decoded.jti;
+
+    const isBlacklistedToken = await tokenBlacklistService.isTokenBlacklisted(TOKEN_ID);
 
     if (isBlacklistedToken) {
       return handleServiceResponse(
@@ -48,20 +48,9 @@ export const verifyJWT = async (req: Request, res: Response, next: NextFunction)
       );
     }
 
-    const decoded = jwt.verify(accessToken, process.env.JWT_SECRET as string) as JWTPayload;
-
-    const user = await userRepository.findById(decoded.userId);
-
-    if (!user) {
-      return handleServiceResponse(
-        ServiceResponse.failure("User not found", null, StatusCodes.UNAUTHORIZED),
-        res
-      );
-    }
-
     req.user = {
-      id: user.id,
-      role: user.role,
+      id: decoded.userId,
+      role: decoded.role,
     };
 
     next();
