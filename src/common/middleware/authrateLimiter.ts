@@ -1,5 +1,5 @@
 import type { Request } from "express";
-import { rateLimit } from "express-rate-limit";
+import { ipKeyGenerator, rateLimit } from "express-rate-limit";
 
 export const authRateLimiter = rateLimit({
     legacyHeaders: true,
@@ -15,5 +15,6 @@ export const authRateLimiter = rateLimit({
         data: null,
     },
 
-    keyGenerator: (req: Request) => req.ip as string, 
+    keyGenerator:(req: Request) => ipKeyGenerator(req.ip as string),
+    
 });

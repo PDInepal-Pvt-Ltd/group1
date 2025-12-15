@@ -5,6 +5,7 @@ import { CreateUserSchema, UserResponseSchema, userSchema, LoginResponseSchema, 
 import { userController } from "./userController";
 import { StatusCodes } from "http-status-codes";
 import { verifyJWT } from "@/common/middleware/verifyJWT";
+import { authRateLimiter } from "@/common/middleware/authrateLimiter";
 
 export const userRegistry = new OpenAPIRegistry();
 export const userRouter: Router = Router();
@@ -57,7 +58,7 @@ userRegistry.registerPath({
     responses: createApiResponse(LoginResponseSchema, "Login successful", StatusCodes.OK),
 });
 
-userRouter.post("/user/login", userController.loginUser);
+userRouter.post("/user/login",authRateLimiter, userController.loginUser);
 
 userRegistry.registerPath({
     method: "post",
@@ -87,7 +88,7 @@ userRegistry.registerPath({
     responses: createApiResponse(RefreshSessionResponseSchema, "Session refreshed successfully", StatusCodes.OK),
 });
 
-userRouter.post("/user/refresh", verifyJWT, userController.refreshSession);
+userRouter.post("/user/refresh",authRateLimiter, verifyJWT, userController.refreshSession);
 
 userRegistry.registerPath({
     method: "post",
@@ -117,4 +118,4 @@ userRegistry.registerPath({
     responses: createApiResponse(UserResponseSchema, "Logout successful", StatusCodes.OK),
 });
 
-userRouter.post("/user/logout", verifyJWT, userController.logoutUser);
+userRouter.post("/user/logout",authRateLimiter, verifyJWT, userController.logoutUser);
