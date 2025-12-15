@@ -52,30 +52,37 @@ Backend is built with **Node.js + Express + Prisma + PostgreSQL**, providing sec
 * **TypeScript** (Static typing)
 * **Prisma ORM** (Database client)
 * **PostgreSQL** (Database)
+* **Redis** (Caching/Blacklisting/Queue Broker)
+* **BullMQ** (Job Queue)
 * **Socket.IO** (Real‑time updates; optional)
-* **Jest** (Testing)
+* **Husky** (Git Hooks)
+* **tsx** (TypeScript Execution)
+* **Winston** (Logging)
 
 ---
 
 ## 📁 Project Structure
 
 ```plaintext
+```plaintext
 /backend
-├─ prisma/
-│  ├─ migrations/
-│  ├─ schema.prisma
-│  └─ seed.ts
+├─ .husky/
+├─ logs/
+├─ prisma.config.ts
+├─ commitlint.config.js
 ├─ src/
-│  ├─ controllers/
-│  ├─ middlewares/
-│  ├─ routes/
-│  ├─ services/
-│  ├─ utils/
-│  └─ index.ts
+│  ├─ api/             # Grouped feature modules (e.g., /user, /auditlog)
+│  │  ├─ user/         # (Controller, Service, Repository, Router, Model)
+│  │  └─ auditlog/
+│  ├─ common/          # Shared components (Middleware, Utils, Redis client)
+│  ├─ api-docs/        # OpenAPI spec generation logic
+│  ├─ generated/       # Code generated from schemas (optional)
+│  ├─ prisma/          # Global Prisma client
+│  ├─ queues/          # BullMQ queue definitions and workers
+│  ├─ server.ts        # Express app configuration
+│  └─ index.ts         # Server entry point
 ├─ package.json
-├─ tsconfig.json
-├─ .env.example
-└─ README.md
+└─ .env.example
 ```
 
 ---
@@ -100,15 +107,21 @@ npm install
 Create `.env` file from `.env.example`:
 
 ```plaintext
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/restaurantqrify
-ACCESS_TOKEN_SECRET=your_access_token_secret
-REFRESH_TOKEN_SECRET=your_refresh_secret
-PORT=4000
-REDIS_USERNAME=your_redis_username
-REDIS_PASSWORD=your_redis_password
-REDIS_HOST=your_redis_host
-REDIS_PORT=your_redis_port
-NODE_ENV=development
+DATABASE_URL="your-database-url"
+ACCESS_TOKEN_SECRET="your-secret-key"
+REFRESH_TOKEN_SECRET="your-secret-key"
+PORT="your server port number"
+NODE_ENV="development or production"
+
+# Redis (for Caching, Blacklisting, and BullMQ)
+REDIS_USERNAME="your redis username"
+REDIS_PASSWORD="your redis password"
+REDIS_HOST="your redis host"
+REDIS_PORT="your redis port number"
+
+# Rate Limiting Configuration
+COMMON_RATE_LIMIT_WINDOW_MS="1000"
+COMMON_RATE_LIMIT_MAX_REQUESTS="20"
 ```
 
 > **⚠ Do not commit real credentials.**
@@ -177,15 +190,18 @@ http://localhost:4000
 
 ```json
 {
-  "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js",
-    "migrate": "prisma migrate dev",
-    "generate": "prisma generate",
-    "studio": "prisma studio",
-    "seed": "ts-node prisma/seed.ts"
-  }
+  "scripts": {
+    "dev": "node --import=tsx --env-file=.env --watch src/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsc",
+    "migrate": "prisma migrate dev",
+    "generate": "prisma generate",
+    "studio": "prisma studio",
+    "seed": "ts-node prisma/seed.ts",
+    "changelog": "npx git-cliff -c .cliff.toml > CHANGELOG.md",
+    "prepare": "husky",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
 }
 ```
 
@@ -193,11 +209,7 @@ http://localhost:4000
 
 ## 🧪 Testing
 
-Run unit tests:
-
-```bash
-npm test
-```
+Note: Testing framework setup is pending.
 
 ---
 
