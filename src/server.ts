@@ -5,12 +5,13 @@ import http from "http";
 import { openAPIRouter } from "./api-docs/openAPIRouter";
 import errorHandler from "./common/middleware/errorHandler";
 import { userRouter } from "./api/user/userRouter";
-
+import rateLimiter from "./common/middleware/rateLimiter";
 const app: Express = express();
 const server = http.createServer(app);
 
 // Middlewares
 app.use(helmet());
+app.use(rateLimiter);
 app.use(cors({
     origin: "*",
     credentials: true
