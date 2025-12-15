@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "node --import=tsx --env-file=.env --watch src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "changelog": "npx git-cliff -c .cliff.toml > CHANGELOG.md"
+    "changelog": "npx git-cliff -c .cliff.toml > CHANGELOG.md",
+    "prepare": "husky"
   },
   "repository": {
     "type": "git",
