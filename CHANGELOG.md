@@ -6,6 +6,111 @@ All notable changes to this project will be documented in this file.
 
 
 
+## 2025-12-16
+
+
+- Find all table and table by id([a5224e8](https://github.com/AAYUSKARKI/RestaurantQRify/commits/a5224e82fee577d2bc4950bd7e4567aa26dde041) )
+
+
+
+## 2025-12-16
+
+
+- Get available table with seats query([4e76aa4](https://github.com/AAYUSKARKI/RestaurantQRify/commits/4e76aa4cb92b9b90575dba6627d7993e578bb7bd) )
+
+
+
+## 2025-12-16
+
+
+- Update table status([b73a661](https://github.com/AAYUSKARKI/RestaurantQRify/commits/b73a6619db570a416a89762cce21d51738e88a95) )
+
+
+
+## 2025-12-16
+
+
+- Unassign a waiter from the table([4c266c1](https://github.com/AAYUSKARKI/RestaurantQRify/commits/4c266c1afeeaeeb241453dc561e1eb9dd8983fe4) )
+
+
+
+## 2025-12-16
+
+
+- Soft delete a table([b176055](https://github.com/AAYUSKARKI/RestaurantQRify/commits/b176055762be83c5e55c2b9a8fed084fab32741f) )
+
+
+
+## 2025-12-16
+
+
+- Update a table data([4de05aa](https://github.com/AAYUSKARKI/RestaurantQRify/commits/4de05aa7460568270ae90965ed6285f08040a944) )
+
+
+
+## 2025-12-16
+
+
+- Change post to patch for assigning waiter([9ad98d1](https://github.com/AAYUSKARKI/RestaurantQRify/commits/9ad98d15770441a17368252bb1b639258f850000) )
+
+
+
+## 2025-12-16
+
+
+- Assign waiter to table([e1470a8](https://github.com/AAYUSKARKI/RestaurantQRify/commits/e1470a8564c9bae66ccd99dd95b50d6b21ddd0c5) )
+
+
+
+## 2025-12-16
+
+
+- Add table audit actions([da80abf](https://github.com/AAYUSKARKI/RestaurantQRify/commits/da80abfe4b3b6446c0b3e3d4b1c4aa2699fb0006) )
+
+
+
+## 2025-12-16
+
+
+- Add table create api([b11e501](https://github.com/AAYUSKARKI/RestaurantQRify/commits/b11e501fed56a46b0da718f0765d67a50492c010) )
+
+
+
+## 2025-12-16
+
+
+- *(healthcheck)* Implement comprehensive service health check([c08f568](https://github.com/AAYUSKARKI/RestaurantQRify/commits/c08f5685e4a4d72d0b3fdf7200532f9602c3df47) )
+
+
+
+## 2025-12-16
+
+
+- Integrate full application stack via Docker Compose([f54e23a](https://github.com/AAYUSKARKI/RestaurantQRify/commits/f54e23a3e28f3443e034d74022286422ae69ef8f) )
+
+
+
+## 2025-12-16
+
+
+- Change prepare script of husky to solve docker issue([43e8146](https://github.com/AAYUSKARKI/RestaurantQRify/commits/43e81460e462941be35843787685f72211707a22) )
+
+
+
+## 2025-12-16
+
+
+- *(docker)* Introduce stable Docker setup for local development([0cde743](https://github.com/AAYUSKARKI/RestaurantQRify/commits/0cde7431fb250da9cfb94ad15f3922b054045b27) )
+
+
+
+## 2025-12-15
+
+
+- Update changelog([d4e6d7c](https://github.com/AAYUSKARKI/RestaurantQRify/commits/d4e6d7ca025e12a896655d8a83d191ef228d60a2) )
+
+
+
 ## 2025-12-15
 
 
