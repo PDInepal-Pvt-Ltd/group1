@@ -41,7 +41,7 @@ tableRegistry.registerPath({
 tableRouter.post("/table", verifyJWT, checkRole(["ADMIN"]), tableController.createTable);
 
 tableRegistry.registerPath({
-    method: "post",
+    method: "patch",
     path: "/api/table/assign/{id}",
     summary: "Assign a table to a waiter",
     tags: ["Table"],
@@ -72,4 +72,4 @@ tableRegistry.registerPath({
     responses: createApiResponse(TableResponseSchema, "Table assigned successfully", StatusCodes.OK),
 });
 
-tableRouter.post("/table/assign/:id", verifyJWT, checkRole(["ADMIN"]), tableController.assignTableToWaiter);
+tableRouter.patch("/table/assign/:id", verifyJWT, checkRole(["ADMIN"]), tableController.assignTableToWaiter);
