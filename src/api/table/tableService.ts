@@ -1,5 +1,5 @@
 import { StatusCodes } from "http-status-codes";
-import type { TableResponse,CreateTable } from "./tableModel";
+import type { TableResponse,CreateTable, UpdateTable } from "./tableModel";
 import { TableRepository } from "./tableRepository";
 import { UserRepository } from "../user/userRepository";
 import { ServiceResponse } from "@/common/utils/serviceResponse";
@@ -65,6 +65,31 @@ export class TableService {
         } catch (error) {
             logger.error("Error assigning table to waiter:", error);
             return ServiceResponse.failure("Error assigning table to waiter", null, StatusCodes.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    async updateTable(tableId: string, data: UpdateTable, userId: string): Promise<ServiceResponse<TableResponse | null>> {
+        try {
+            if(data.assignedTo){
+                const user = await this.userRepository.findById(data.assignedTo);
+                if(!user){
+                    return ServiceResponse.failure(`Assigned waiter ${data.assignedTo} does not exist`, null, StatusCodes.BAD_REQUEST);
+                }
+            }
+            const table = await this.tableRepository.updateTable(tableId, data);
+            await this.auditLogQueue.add("createAuditLog", {
+                userId,
+                action: TABLE_AUDIT_ACTIONS.TABLE_UPDATED,
+                resourceType: "Table",
+                resourceId: table.id,
+                payload: table,
+                ip: null,
+                userAgent: null,
+            });
+            return ServiceResponse.success<TableResponse>("Table updated successfully", table, StatusCodes.OK);
+        } catch (error) {
+            logger.error("Error updating table:", error);
+            return ServiceResponse.failure("Error updating table", null, StatusCodes.INTERNAL_SERVER_ERROR);
         }
     }
 }
