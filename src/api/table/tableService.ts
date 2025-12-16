@@ -92,6 +92,25 @@ export class TableService {
             return ServiceResponse.failure("Error updating table", null, StatusCodes.INTERNAL_SERVER_ERROR);
         }
     }
+
+    async deleteTable(tableId: string, userId: string): Promise<ServiceResponse<null>> {
+        try {
+            await this.tableRepository.deleteTable(tableId);
+            await this.auditLogQueue.add("createAuditLog", {
+                userId,
+                action: TABLE_AUDIT_ACTIONS.TABLE_DELETED,
+                resourceType: "Table",
+                resourceId: tableId,
+                payload: null,
+                ip: null,
+                userAgent: null,
+            });
+            return ServiceResponse.success<null>("Table deleted successfully", null, StatusCodes.OK);
+        } catch (error) {
+            logger.error("Error deleting table:", error);
+            return ServiceResponse.failure("Error deleting table", null, StatusCodes.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
 
 export const tableService = new TableService();

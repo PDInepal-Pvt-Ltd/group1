@@ -44,6 +44,19 @@ class TableController {
         const serviceResponse: ServiceResponse<TableResponse | null> = await tableService.updateTable(tableId, data, userId);
         return handleServiceResponse(serviceResponse, res);
     }
+
+    public deleteTable: RequestHandler = async (req: Request, res: Response) => {
+        if (!req.user || req.user.role !== "ADMIN") {
+            return handleServiceResponse(
+                ServiceResponse.failure("You do not have permission to perform this action", null, 403),
+                res
+            );
+        }
+        const userId = req.user.id;
+        const tableId = req.params.id;
+        const serviceResponse: ServiceResponse<TableResponse | null> = await tableService.deleteTable(tableId, userId);
+        return handleServiceResponse(serviceResponse, res);
+    }
 }
 
 export const tableController = new TableController();

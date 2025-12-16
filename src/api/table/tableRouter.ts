@@ -107,3 +107,26 @@ tableRegistry.registerPath({
 });
 
 tableRouter.put("/table/:id", verifyJWT, checkRole(["ADMIN"]), tableController.updateTable);
+
+tableRegistry.registerPath({
+    method: "delete",
+    path: "/api/table/{id}",
+    summary: "Delete a table",
+    tags: ["Table"],
+    parameters: [
+        {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+                type: "string",
+            },
+            description: "ID of the table to be deleted",
+            example: "123e4567-e89b-12d3-a456-426655440000",
+        },
+    ],
+    security: [{ bearerAuth: [] }],
+    responses: createApiResponse(TableResponseSchema, "Table deleted successfully", StatusCodes.OK),
+});
+
+tableRouter.delete("/table/:id", verifyJWT, checkRole(["ADMIN"]), tableController.deleteTable);

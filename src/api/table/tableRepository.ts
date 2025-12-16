@@ -42,4 +42,18 @@ export class TableRepository {
              }
         });
     }
+
+    async deleteTable(tableId: string): Promise<TableResponse> {
+        return prisma.table.update({
+             where: { id: tableId },
+             data: { deletedAt: new Date() },
+             select: {
+                 id: true,
+                 name: true,
+                 seats: true,
+                 status: true,
+                 assignedTo: true,
+             }
+        });
+    }
 }
