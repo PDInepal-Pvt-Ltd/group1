@@ -16,6 +16,32 @@ export class TableRepository {
         });
     }
 
+    async findById(tableId: string): Promise<TableResponse | null> {
+        return prisma.table.findUnique({
+            where: { id: tableId },
+            select: {
+                id: true,
+                name: true,
+                seats: true,
+                status: true,
+                assignedTo: true,
+            }
+        });
+    }
+
+    async findAll(): Promise<TableResponse[]> {
+        return prisma.table.findMany({
+            where: { deletedAt: null },
+            select: {
+                id: true,
+                name: true,
+                seats: true,
+                status: true,
+                assignedTo: true,
+            }
+        });
+    }
+
     async assignTableToWaiter(tableId: string, waiterId: string): Promise<TableResponse> {
         return prisma.table.update({
             where: { id: tableId },

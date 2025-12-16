@@ -43,6 +43,40 @@ tableRouter.post("/table", verifyJWT, checkRole(["ADMIN"]), tableController.crea
 
 tableRegistry.registerPath({
     method: "get",
+    path: "/api/table",
+    summary: "Find all tables",
+    tags: ["Table"],
+    security: [{ bearerAuth: [] }],
+    responses: createApiResponse(TableResponseSchema.array(), "Tables retrieved successfully", StatusCodes.OK),
+});
+
+tableRouter.get("/table", verifyJWT, tableController.getAllTables);
+
+tableRegistry.registerPath({
+    method: "get",
+    path: "/api/table/{id}",
+    summary: "Find table by ID",
+    tags: ["Table"],
+    parameters: [
+        {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+                type: "string",
+            },
+            description: "ID of the table to be retrieved",
+            example: "123e4567-e89b-12d3-a456-426655440000",
+        },
+    ],
+    security: [{ bearerAuth: [] }],
+    responses: createApiResponse(TableResponseSchema, "Table retrieved successfully", StatusCodes.OK),
+});
+
+tableRouter.get("/table/:id", verifyJWT, tableController.getTableById);
+
+tableRegistry.registerPath({
+    method: "get",
     path: "/api/table/available",
     summary: "Find available tables by number of seats",
     tags: ["Table"],

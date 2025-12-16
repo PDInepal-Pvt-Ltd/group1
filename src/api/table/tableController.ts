@@ -18,6 +18,17 @@ class TableController {
         return handleServiceResponse(serviceResponse, res);
     }
 
+    public getTableById: RequestHandler = async (req: Request, res: Response) => {
+        const tableId = req.params.id;
+        const serviceResponse: ServiceResponse<TableResponse | null> = await tableService.getTableById(tableId);
+        return handleServiceResponse(serviceResponse, res);
+    }
+
+    public getAllTables: RequestHandler = async (req: Request, res: Response) => {
+        const serviceResponse: ServiceResponse<TableResponse[] | null> = await tableService.getAllTables();
+        return handleServiceResponse(serviceResponse, res);
+    }
+
     public assignTableToWaiter: RequestHandler = async (req: Request, res: Response) => {
         if (!req.user || req.user.role !== "ADMIN") {
             return handleServiceResponse(

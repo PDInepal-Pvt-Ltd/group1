@@ -46,6 +46,29 @@ export class TableService {
         }
     }
 
+    async getTableById(tableId: string): Promise<ServiceResponse<TableResponse | null>> {
+        try {
+            const table = await this.tableRepository.findById(tableId);
+            if (!table) {
+                return ServiceResponse.failure("Table not found", null, StatusCodes.NOT_FOUND);
+            }
+            return ServiceResponse.success<TableResponse>("Table found successfully", table, StatusCodes.OK);
+        } catch (error) {
+            logger.error("Error getting table by id:", error);
+            return ServiceResponse.failure("Error getting table by id", null, StatusCodes.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    async getAllTables(): Promise<ServiceResponse<TableResponse[] | null>> {
+        try {
+            const tables = await this.tableRepository.findAll();
+            return ServiceResponse.success<TableResponse[]>("Tables found successfully", tables, StatusCodes.OK);
+        } catch (error) {
+            logger.error("Error getting all tables:", error);
+            return ServiceResponse.failure("Error getting all tables", null, StatusCodes.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     async assignTableToWaiter(tableId: string, waiterId: string, userId: string): Promise<ServiceResponse<TableResponse | null>> {
         try {
             const user = await this.userRepository.findById(waiterId);
