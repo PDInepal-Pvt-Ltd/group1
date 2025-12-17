@@ -17,4 +17,20 @@ export class MenuItemRepository {
             }
         });
     }
+
+    async findById(menuItemId: string): Promise<MenuItemResponse | null> {
+        return prisma.menuItem.findUnique({
+            where: { id: menuItemId },
+            select: {
+                id: true,
+                name: true,
+                description: true,
+                price: true,
+                imageUrl: true,
+                isAvailable: true,
+                isVeg: true,
+                categoryId: true,
+            }
+        });
+    }
 }

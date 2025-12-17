@@ -47,3 +47,25 @@ menuItemRegistry.registerPath({
 });
 
 menuItemRouter.post("/menu-item", verifyJWT, checkRole(["ADMIN"]), upload.single("menuImage"), menuItemController.createMenuItem);
+
+menuItemRegistry.registerPath({
+    method: "get",
+    path: "/api/menu-item/{id}",
+    summary: "Get menu item by ID",
+    tags: ["MenuItem"],
+    parameters: [
+        {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+                type: "string",
+            },
+            description: "ID of the menu item to be retrieved",
+            example: "123e4567-e89b-12d3-a456-426655440000",
+        },
+    ],
+    responses: createApiResponse(MenuItemResponseSchema, "Menu item retrieved successfully", StatusCodes.OK),
+});
+
+menuItemRouter.get("/menu-item/:id", menuItemController.getMenuItemById);

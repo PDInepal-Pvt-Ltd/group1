@@ -23,6 +23,12 @@ class MenuItemController {
         const serviceResponse: ServiceResponse<MenuItemResponse | null> = await menuItemService.createMenuItem(data, menuImage, userId);
         return handleServiceResponse(serviceResponse, res);
     }
+
+    public getMenuItemById: RequestHandler = async (req: Request, res: Response) => {
+        const menuItemId = req.params.id;
+        const serviceResponse: ServiceResponse<MenuItemResponse | null> = await menuItemService.getMenuItemById(menuItemId);
+        return handleServiceResponse(serviceResponse, res);
+    }
 }
 
 export const menuItemController = new MenuItemController();

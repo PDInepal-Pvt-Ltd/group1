@@ -50,6 +50,19 @@ export class MenuItemService {
             return ServiceResponse.failure("Error creating Menu Item", null, StatusCodes.INTERNAL_SERVER_ERROR);
         }
     }
+
+    async getMenuItemById(menuItemId: string): Promise<ServiceResponse<MenuItemResponse | null>> {
+        try {
+            const menuItem = await this.menuItemRepository.findById(menuItemId);
+            if (!menuItem) {
+                return ServiceResponse.failure("Menu item not found", null, StatusCodes.NOT_FOUND);
+            }
+            return ServiceResponse.success<MenuItemResponse>("Menu item found successfully", menuItem, StatusCodes.OK);
+        } catch (error) {
+            logger.error("Error getting menu item by id:", error);
+            return ServiceResponse.failure("Error getting menu item by id", null, StatusCodes.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
 
 export const menuItemService = new MenuItemService();
