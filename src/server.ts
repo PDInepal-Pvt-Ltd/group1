@@ -27,11 +27,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api", userRouter);
 app.use("/api", healthCheckRouter);
 app.use("/api", tableRouter);
-<<<<<<< HEAD
 app.use("/api", menuItemRouter);
-=======
 app.use("/api", categoryRouter);
->>>>>>> feat/category
 
 // OpenAPI Documentation
 app.use(openAPIRouter);
