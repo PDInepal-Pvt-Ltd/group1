@@ -74,6 +74,17 @@ export class MenuItemService {
         }
     }
 
+    async getAvailableMenuItems(): Promise<ServiceResponse<MenuItemResponse[] | null>> {
+        try {
+            const allMenuItems = await this.menuItemRepository.findAll();
+            const availableMenuItems = allMenuItems.filter((menuItem) => menuItem.isAvailable);
+            return ServiceResponse.success<MenuItemResponse[]>("Available menu items found successfully", availableMenuItems, StatusCodes.OK);
+        } catch (error) {
+            logger.error("Error getting available menu items:", error);
+            return ServiceResponse.failure("Error getting available menu items", null, StatusCodes.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     async updateMenuItem(menuItemId: string, data: UpdateMenuItem): Promise<ServiceResponse<MenuItemResponse | null>> {
         try {
             const menuItem = await this.menuItemRepository.updateMenuItem(menuItemId, data);

@@ -35,6 +35,11 @@ class MenuItemController {
         return handleServiceResponse(serviceResponse, res);
     }
 
+    public getAvailableMenuItems: RequestHandler = async (req: Request, res: Response) => {
+        const serviceResponse: ServiceResponse<MenuItemResponse[] | null> = await menuItemService.getAvailableMenuItems();
+        return handleServiceResponse(serviceResponse, res);
+    }
+
     public updateMenuItem: RequestHandler = async (req: Request, res: Response) => {
         if (!req.user || req.user.role !== "ADMIN") {
             return handleServiceResponse(

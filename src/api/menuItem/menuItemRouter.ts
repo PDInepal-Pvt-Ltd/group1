@@ -81,6 +81,16 @@ menuItemRegistry.registerPath({
 menuItemRouter.get("/menu-item", menuItemController.getAllMenuItems);
 
 menuItemRegistry.registerPath({
+    method: "get",
+    path: "/api/menu-item/available",
+    summary: "Get all available menu items",
+    tags: ["MenuItem"],
+    responses: createApiResponse(MenuItemResponseSchema.array(), "Available menu items retrieved successfully", StatusCodes.OK),
+});
+
+menuItemRouter.get("/menu-item/available", menuItemController.getAvailableMenuItems);
+
+menuItemRegistry.registerPath({
     method: "put",
     path: "/api/menu-item/{id}",
     summary: "Update menu item by ID",
