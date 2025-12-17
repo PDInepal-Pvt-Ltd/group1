@@ -8,6 +8,7 @@ import { userRouter } from "./api/user/userRouter";
 import rateLimiter from "./common/middleware/rateLimiter";
 import { healthCheckRouter } from "./api/healthCheck/healthCheckRouter";
 import { tableRouter } from "./api/table/tableRouter";
+import { categoryRouter } from "./api/category/categoryRouter";
 const app: Express = express();
 const server = http.createServer(app);
 
@@ -25,6 +26,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api", userRouter);
 app.use("/api", healthCheckRouter);
 app.use("/api", tableRouter);
+app.use("/api", categoryRouter);
 
 // OpenAPI Documentation
 app.use(openAPIRouter);

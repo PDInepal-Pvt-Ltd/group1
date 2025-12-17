@@ -11,13 +11,13 @@
 3. [Architecture & Tech Stack](#architecture--tech-stack)
 4. [Repository Layout](#repository-layout)
 5. [Getting started (local development)](#getting-started-local-development)
+   - [Prerequisites](#prerequisites)
+   - [Environment variables](#environment-variables)
+   - [Database & Prisma](#database--prisma)
+   - [Run backend](#run-backend)
+   - [Run frontend](#run-frontend)
+   - [Run mobile (Flutter)](#run-mobile-flutter)
 
-   * [Prerequisites](#prerequisites)
-   * [Environment variables](#environment-variables)
-   * [Database & Prisma](#database--prisma)
-   * [Run backend](#run-backend)
-   * [Run frontend](#run-frontend)
-   * [Run mobile (Flutter)](#run-mobile-flutter)
 6. [Scripts & Commands](#scripts--commands)
 7. [Testing](#testing)
 8. [API & Contracts](#api--contracts)
@@ -37,10 +37,10 @@
 
 Primary goals:
 
-* Demonstrate a full order → bill cycle
-* Provide role-based UI/UX for Admin / Waiter / Kitchen / Cashier
-* Offer a lightweight QR ordering experience for customers
-* Support a surplus flash-sale flow to reduce food waste
+- Demonstrate a full order → bill cycle
+- Provide role-based UI/UX for Admin / Waiter / Kitchen / Cashier
+- Offer a lightweight QR ordering experience for customers
+- Support a surplus flash-sale flow to reduce food waste
 
 Audience: Intern/demo teams, small restaurants, instructors.
 
@@ -48,15 +48,15 @@ Audience: Intern/demo teams, small restaurants, instructors.
 
 ## Key Features ✅
 
-* Table & reservation management with conflict checks
-* Role-based access (Admin / Waiter / Kitchen / Cashier)
-* Menu + categories, images, allergen tags
-* Order creation, modification, split billing support
-* Kitchen Display System (KDS) with event logging (KdsEvent)
-* Billing with taxes, service charge, discounts and PDF invoice generation
-* Per-table QR ordering (no payment gateway) with live polling for status
-* Surplus/flash-sale mechanism (time-based discounts for selected items)
-* Audit logs, refresh tokens, soft deletes and denormalized snapshots for reliability
+- Table & reservation management with conflict checks
+- Role-based access (Admin / Waiter / Kitchen / Cashier)
+- Menu + categories, images, allergen tags
+- Order creation, modification, split billing support
+- Kitchen Display System (KDS) with event logging (KdsEvent)
+- Billing with taxes, service charge, discounts and PDF invoice generation
+- Per-table QR ordering (no payment gateway) with live polling for status
+- Surplus/flash-sale mechanism (time-based discounts for selected items)
+- Audit logs, refresh tokens, soft deletes and denormalized snapshots for reliability
 
 ---
 
@@ -64,26 +64,26 @@ Audience: Intern/demo teams, small restaurants, instructors.
 
 **Backend**
 
-* Node.js (Express/Nest/your choice) — RESTful JSON API
-* Prisma ORM + PostgreSQL
-* Authentication: JWT access tokens + Refresh tokens
-* Optional: Socket.IO for real-time where feasible
+- Node.js (Express/Nest/your choice) — RESTful JSON API
+- Prisma ORM + PostgreSQL
+- Authentication: JWT access tokens + Refresh tokens
+- Optional: Socket.IO for real-time where feasible
 
 **Frontend (web)**
 
-* React (Vite/CRA) — role-based dashboards
-* Tailwind CSS (recommended) for quick layout
+- React (Vite/CRA) — role-based dashboards
+- Tailwind CSS (recommended) for quick layout
 
 **Mobile**
 
-* Flutter (cross-platform demo APK)
+- Flutter (cross-platform demo APK)
 
 **Dev / Tooling**
 
-* Git (branching: `main`, feature branches)
-* Jest (unit tests), Cypress or Selenium (E2E)
-* Docker / docker-compose for local DB
-* jsPDF or Puppeteer for PDF invoice generation
+- Git (branching: `main`, feature branches)
+- Jest (unit tests), Cypress or Selenium (E2E)
+- Docker / docker-compose for local DB
+- jsPDF or Puppeteer for PDF invoice generation
 
 ---
 
@@ -121,12 +121,12 @@ Audience: Intern/demo teams, small restaurants, instructors.
 
 ### Prerequisites
 
-* Node.js >= 18
-* npm / yarn
-* PostgreSQL >= 12 (or use Docker)
-* pnpm (optional)
-* Flutter (for mobile dev)
-* Docker & docker-compose (recommended for local DB)
+- Node.js >= 18
+- npm / yarn
+- PostgreSQL >= 12 (or use Docker)
+- pnpm (optional)
+- Flutter (for mobile dev)
+- Docker & docker-compose (recommended for local DB)
 
 ### Environment variables (.env)
 
@@ -190,8 +190,8 @@ npm run seed
 
 **Notes:**
 
-* Use `prisma studio` to inspect DB: `npx prisma studio`.
-* Use soft deletes (deletedAt) — include queries that filter them out by default in services.
+- Use `prisma studio` to inspect DB: `npx prisma studio`.
+- Use soft deletes (deletedAt) — include queries that filter them out by default in services.
 
 ### Run backend
 
@@ -242,24 +242,25 @@ flutter run  # or open in your IDE
 
 ## Scripts & Commands (cheat-sheet)
 
-* `docker-compose up -d` — start local infra (Postgres)
-* `cd backend && npm run dev` — start backend
-* `cd frontend && npm run dev` — start web UI
-* `cd mobile && flutter run` — start mobile app
-* `cd backend && npx prisma migrate dev --name <desc>` — run migrations
-* `cd backend && npx prisma studio` — DB browser
+- `docker-compose up -d` — start local infra (Postgres)
+- `cd backend && npm run dev` — start backend
+- `cd frontend && npm run dev` — start web UI
+- `cd mobile && flutter run` — start mobile app
+- `cd backend && npx prisma migrate dev --name <desc>` — run migrations
+- `cd backend && npx prisma studio` — DB browser
 
 ---
 
 ## Testing
 
-* Unit tests: backend & frontend use Jest. Example:
+- Unit tests: backend & frontend use Jest. Example:
 
   ```bash
   cd backend
   npm test
   ```
-* E2E: Cypress or Selenium for flow tests (order → bill).
+
+- E2E: Cypress or Selenium for flow tests (order → bill).
 
 Aim for a base test coverage (e.g. 60–80%) for core services during the internship; more is better.
 
@@ -271,15 +272,15 @@ Provide a lightweight OpenAPI spec (YAML/JSON) in `/docs/openapi.yaml` covering 
 
 Important endpoints (examples):
 
-* `POST /auth/login` — user login
-* `POST /auth/refresh` — refresh token
-* `GET /tables` — list tables
-* `POST /tables/:id/assign` — assign waiter
-* `POST /reservations` — create reservation
-* `GET /menu` — public menu (used by QR)
-* `POST /orders` — create order
-* `PATCH /orders/:id/status` — update status (KDS)
-* `POST /bills` — generate bill
+- `POST /auth/login` — user login
+- `POST /auth/refresh` — refresh token
+- `GET /tables` — list tables
+- `POST /tables/:id/assign` — assign waiter
+- `POST /reservations` — create reservation
+- `GET /menu` — public menu (used by QR)
+- `POST /orders` — create order
+- `PATCH /orders/:id/status` — update status (KDS)
+- `POST /bills` — generate bill
 
 **Versioning:** include `/v1/` prefix in early stages to simplify future versioned changes.
 
@@ -291,47 +292,46 @@ Important endpoints (examples):
 
 **Options**
 
-* `Vercel` or `Netlify` for frontend
-* `Render` or `Heroku` or `Fly` for backend (or container registry + Kubernetes for advanced teams)
-* Managed Postgres (e.g. Render Postgres, AWS RDS) for production
+- `Vercel` or `Netlify` for frontend
+- `Render` or `Heroku` or `Fly` for backend (or container registry + Kubernetes for advanced teams)
+- Managed Postgres (e.g. Render Postgres, AWS RDS) for production
 
 **Docker**
 Provide a `Dockerfile` for backend and a `docker-compose.yml` that contains:
 
-* postgres
-* pgadmin (optional)
-* backend (built image)
+- postgres
+- pgadmin (optional)
+- backend (built image)
 
 **CI/CD** (recommended)
 
-* GitHub Actions pipeline:
-
-  * Lint → Test → Build → Migrate (for staging) → Deploy
+- GitHub Actions pipeline:
+  - Lint → Test → Build → Migrate (for staging) → Deploy
 
 **Migration strategy**
 
-* `prisma migrate deploy` for prod
-* Maintain migration history in the repo
+- `prisma migrate deploy` for prod
+- Maintain migration history in the repo
 
 ---
 
 ## Operational notes (DB, backups, pruning)
 
-* Schedule daily DB backups for production (snapshot + retention 30 days)
-* Regularly prune old `AuditLog` / `KdsEvent` entries older than X months to keep DB size manageable
-* Rotate JWT_SECRET and refresh tokens periodically
-* Keep `pdfUrl` storage in durable object storage (S3 / GCS) if you generate invoices
+- Schedule daily DB backups for production (snapshot + retention 30 days)
+- Regularly prune old `AuditLog` / `KdsEvent` entries older than X months to keep DB size manageable
+- Rotate JWT_SECRET and refresh tokens periodically
+- Keep `pdfUrl` storage in durable object storage (S3 / GCS) if you generate invoices
 
 ---
 
 ## Security & Privacy 🔒
 
-* Store passwords hashed with bcrypt (or argon2). Never store plaintext.
-* Limit refresh token lifetime and support revocation via `RefreshToken.revoked`.
-* Validate and sanitize all inputs (avoid SQL injection — Prisma helps, but validate business rules too).
-* Use HTTPS in production; set `Secure` and `HttpOnly` on cookies where applicable.
-* Role-based authorization checks on every protected route.
-* Minimal PCI scope: do not store card details. For demo, treat card as a label only.
+- Store passwords hashed with bcrypt (or argon2). Never store plaintext.
+- Limit refresh token lifetime and support revocation via `RefreshToken.revoked`.
+- Validate and sanitize all inputs (avoid SQL injection — Prisma helps, but validate business rules too).
+- Use HTTPS in production; set `Secure` and `HttpOnly` on cookies where applicable.
+- Role-based authorization checks on every protected route.
+- Minimal PCI scope: do not store card details. For demo, treat card as a label only.
 
 Privacy: only collect phone/email when needed and have an opt-in for marketing communications (even in demos).
 
@@ -341,31 +341,31 @@ Privacy: only collect phone/email when needed and have an opt-in for marketing c
 
 **Branching model**
 
-* `main` — stable demo-ready code
-* `develop` — integration branch (optional)
-* `feature/*` — feature branches
-* `hotfix/*` — urgent fixes
+- `main` — stable demo-ready code
+- `develop` — integration branch (optional)
+- `feature/*` — feature branches
+- `hotfix/*` — urgent fixes
 
 **PR checklist**
 
-* Code compiles and tests pass
-* Linting OK
-* Migration included if DB schema changed (add a small summary in PR)
-* Add/Update docs in `/docs`
+- Code compiles and tests pass
+- Linting OK
+- Migration included if DB schema changed (add a small summary in PR)
+- Add/Update docs in `/docs`
 
 **Commit messages**
 
-* Use conventional commits (e.g., `feat: add reservation conflict check`, `fix: handle null imageUrl`) to enable changelog automation later.
+- Use conventional commits (e.g., `feat: add reservation conflict check`, `fix: handle null imageUrl`) to enable changelog automation later.
 
 ---
 
 ## Roadmap & Extensions 🚀
 
-* Payment gateway integration (Stripe/PayPal) — out-of-scope for MVP
-* Multi-tenant support (tenant isolation per schema or row-level security)
-* Reporting & analytics (sales, waste reduction metrics)
-* Offline-first mobile ordering (local queue + sync)
-* POS hardware integration (cash drawer, printers)
+- Payment gateway integration (Stripe/PayPal) — out-of-scope for MVP
+- Multi-tenant support (tenant isolation per schema or row-level security)
+- Reporting & analytics (sales, waste reduction metrics)
+- Offline-first mobile ordering (local queue + sync)
+- POS hardware integration (cash drawer, printers)
 
 ---
 
@@ -382,15 +382,11 @@ A: Check timezone handling; store and compare in UTC.
 
 ## Contact / Maintainers
 
-* Primary contact: *Aayus Karki*
-* Email: `karki.aayush2003@gmail.com`
-
+- Primary contact: _Aayus Karki_
+- Email: `karki.aayush2003@gmail.com`
 
 ## License
 
 MIT © 2025 AAYUS KARKI ([GitHub](https://github.com/aayus-karki))
 
 ---
-
-
-
