@@ -65,4 +65,21 @@ export class MenuItemRepository {
             }
         });
     }
+
+    async deleteMenuItem(menuItemId: string): Promise<MenuItemResponse> {
+        return prisma.menuItem.update({
+            where: { id: menuItemId },
+            data: { deletedAt: new Date() },
+            select: {
+                id: true,
+                name: true,
+                description: true,
+                price: true,
+                imageUrl: true,
+                isAvailable: true,
+                isVeg: true,
+                categoryId: true,
+            }
+        });
+    }
 }

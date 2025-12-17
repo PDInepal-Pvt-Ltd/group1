@@ -47,6 +47,18 @@ class MenuItemController {
         const serviceResponse: ServiceResponse<MenuItemResponse | null> = await menuItemService.updateMenuItem(menuItemId, data);
         return handleServiceResponse(serviceResponse, res);
     }
+
+    public deleteMenuItem: RequestHandler = async (req: Request, res: Response) => {
+        if (!req.user || req.user.role !== "ADMIN") {
+            return handleServiceResponse(
+                ServiceResponse.failure("You do not have permission to perform this action", null, 403),
+                res
+            );
+        }
+        const menuItemId = req.params.id;
+        const serviceResponse: ServiceResponse<MenuItemResponse | null> = await menuItemService.deleteMenuItem(menuItemId);
+        return handleServiceResponse(serviceResponse, res);
+    }   
 }
 
 export const menuItemController = new MenuItemController();

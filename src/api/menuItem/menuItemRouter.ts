@@ -113,3 +113,26 @@ menuItemRegistry.registerPath({
 });
 
 menuItemRouter.put("/menu-item/:id", verifyJWT, checkRole(["ADMIN"]), menuItemController.updateMenuItem);
+
+menuItemRegistry.registerPath({
+    method: "delete",
+    path: "/api/menu-item/{id}",
+    summary: "Delete menu item by ID",
+    tags: ["MenuItem"],
+    parameters: [
+        {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+                type: "string",
+            },
+            description: "ID of the menu item to be deleted",
+            example: "123e4567-e89b-12d3-a456-426655440000",
+        },
+    ],
+    security: [{ bearerAuth: [] }],
+    responses: createApiResponse(MenuItemResponseSchema, "Menu item deleted successfully", StatusCodes.OK),
+});
+
+menuItemRouter.delete("/menu-item/:id", verifyJWT, checkRole(["ADMIN"]), menuItemController.deleteMenuItem);

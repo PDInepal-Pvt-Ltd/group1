@@ -83,6 +83,16 @@ export class MenuItemService {
             return ServiceResponse.failure("Error updating menu item", null, StatusCodes.INTERNAL_SERVER_ERROR);
         }
     }
+
+    async deleteMenuItem(menuItemId: string): Promise<ServiceResponse<MenuItemResponse | null>> {
+        try {
+            const menuItem = await this.menuItemRepository.deleteMenuItem(menuItemId);
+            return ServiceResponse.success<MenuItemResponse>("Menu item deleted successfully", menuItem, StatusCodes.OK);
+        } catch (error) {
+            logger.error("Error deleting menu item:", error);
+            return ServiceResponse.failure("Error deleting menu item", null, StatusCodes.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
 
 export const menuItemService = new MenuItemService();
