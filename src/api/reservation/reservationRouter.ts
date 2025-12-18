@@ -1,7 +1,7 @@
 import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import { Router } from "express";
 import { createApiResponse } from "@/api-docs/openAPIResponseBuilders";
-import { CreateReservationSchema, ReservationResponseSchema, reservationSchema} from "./reservationModel";
+import { CreateReservationSchema, UpdateReservationSchema, ReservationResponseSchema, reservationSchema} from "./reservationModel";
 import { StatusCodes } from "http-status-codes";
 import { reservationController } from "./reservationController";
 import { validateRequest } from "@/common/utils/httpHandler";
@@ -10,12 +10,6 @@ export const reservationRegistry = new OpenAPIRegistry();
 export const reservationRouter: Router = Router();
 
 reservationRegistry.register("Reservation",reservationSchema);
-
-reservationRegistry.registerComponent("securitySchemes","bearerAuth", {
-    type: "http",
-    scheme: "bearer",
-    bearerFormat: "JWT",
-});
 
 reservationRegistry.registerPath({
     method: "post",
@@ -67,3 +61,54 @@ reservationRegistry.registerPath({
 });
 
 reservationRouter.get("/reservation", reservationController.getAllReservations);
+
+reservationRegistry.registerPath({
+    method: "put",
+    path: "/api/reservation/{id}",
+    summary: "Update a reservation by id",
+    tags: ["Reservation"],
+    parameters: [
+        {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+                type: "string",
+            },
+        },
+    ],
+    request: {
+        body: {
+            description: "Reservation object that needs to be updated",
+            required: true,
+            content: {
+                "application/json": {
+                    schema: UpdateReservationSchema,
+                },
+            },
+        },
+    },
+    responses: createApiResponse(ReservationResponseSchema, "Reservation updated successfully", StatusCodes.OK),
+}); 
+
+reservationRouter.put("/reservation/:id", validateRequest(UpdateReservationSchema), reservationController.updateReservation);
+
+reservationRegistry.registerPath({
+    method: "delete",
+    path: "/api/reservation/{id}",
+    summary: "Delete a reservation by id",
+    tags: ["Reservation"],
+    parameters: [
+        {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+                type: "string",
+            },
+        },
+    ],
+    responses: createApiResponse(ReservationResponseSchema, "Reservation deleted successfully", StatusCodes.OK),
+});
+
+reservationRouter.delete("/reservation/:id", reservationController.deleteReservation);

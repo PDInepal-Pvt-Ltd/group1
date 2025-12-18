@@ -1,5 +1,5 @@
 import { prisma } from "@/common/lib/prisma";
-import { ReservationResponse, CreateReservation } from "./reservationModel";
+import { ReservationResponse, CreateReservation, UpdateReservation } from "./reservationModel";
 import { ConflictError } from "@/common/utils/customError";
 
 export class ReservationRepository {
@@ -64,6 +64,42 @@ export class ReservationRepository {
 
     async findAll(): Promise<ReservationResponse[]> {
         return prisma.reservation.findMany({
+            select: {
+                id: true,
+                tableId: true,
+                guestName: true,
+                guestPhone: true,
+                reservedAt: true,
+                reservedUntil: true,
+                durationMin: true,
+                guests: true,
+                status: true,
+            }
+        });
+    }
+
+    async updateReservation(reservationId: string, data: UpdateReservation): Promise<ReservationResponse> {
+        return prisma.reservation.update({
+            where: { id: reservationId },
+            data,
+            select: {
+                id: true,
+                tableId: true,
+                guestName: true,
+                guestPhone: true,
+                reservedAt: true,
+                reservedUntil: true,
+                durationMin: true,
+                guests: true,
+                status: true,
+            }
+        });
+    }
+
+    async deleteReservation(reservationId: string): Promise<ReservationResponse> {
+        return prisma.reservation.update({
+            where: { id: reservationId },
+            data: { deletedAt: new Date() },
             select: {
                 id: true,
                 tableId: true,
