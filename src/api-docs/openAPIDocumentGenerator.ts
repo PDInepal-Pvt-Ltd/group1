@@ -4,11 +4,12 @@ import { tableRegistry } from "@/api/table/tableRouter";
 import { menuItemRegistry } from "@/api/menuItem/menuItemRouter";
 import { OpenAPIRegistry, OpenApiGeneratorV3 } from "@asteasolutions/zod-to-openapi";
 import { reservationRegistry } from "@/api/reservation/reservationRouter";
+import { allergenRegistry } from "@/api/allergen/allergenRouter";
 
 export type OpenAPIDocument = ReturnType<OpenApiGeneratorV3["generateDocument"]>;
 
 export function generateOpenAPIDocument(): OpenAPIDocument {
-	const registry = new OpenAPIRegistry([healthCheckRegistry, userRegistry, tableRegistry, menuItemRegistry, reservationRegistry]);
+	const registry = new OpenAPIRegistry([healthCheckRegistry, userRegistry, tableRegistry, menuItemRegistry, reservationRegistry, allergenRegistry]);
 	const generator = new OpenApiGeneratorV3(registry.definitions);
 
 	return generator.generateDocument({
