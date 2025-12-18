@@ -6,6 +6,111 @@ All notable changes to this project will be documented in this file.
 
 
 
+## 2025-12-17
+
+
+- Filter menu item by category([492d157](https://github.com/AAYUSKARKI/RestaurantQRify/commits/492d15777c5678aec8f5bf07cb894210b4a36af3) )
+
+
+
+## 2025-12-17
+
+
+- Get available menu items([3b56dad](https://github.com/AAYUSKARKI/RestaurantQRify/commits/3b56dad28cc7cc79d2a551707746fe9ce25bd8f6) )
+
+
+
+## 2025-12-17
+
+
+- Update image of menu item([5fea917](https://github.com/AAYUSKARKI/RestaurantQRify/commits/5fea91735add51d116f812a41db9a452c533bf44) )
+
+
+
+## 2025-12-17
+
+
+- Soft delete a menuitem([2b9d699](https://github.com/AAYUSKARKI/RestaurantQRify/commits/2b9d699de801cc20db3b20544144e196e0fbfa88) )
+
+
+
+## 2025-12-17
+
+
+- Update an menuitem data([e5ee067](https://github.com/AAYUSKARKI/RestaurantQRify/commits/e5ee06744176bb8d40c295a9db08449a63d5e74d) )
+
+
+
+## 2025-12-17
+
+
+- Add get all menu items([7c390b2](https://github.com/AAYUSKARKI/RestaurantQRify/commits/7c390b28315464be6a4ac7945fdee9f608d29fb6) )
+
+
+
+## 2025-12-17
+
+
+- Remove env from docker ignore([28db31d](https://github.com/AAYUSKARKI/RestaurantQRify/commits/28db31dae47d7bfa72e049d2aa874fa789080e35) )
+
+
+
+## 2025-12-17
+
+
+- Add get menu-item by id([1af7531](https://github.com/AAYUSKARKI/RestaurantQRify/commits/1af753111ad8e1d712ba2cc1ff83a8d44339448f) )
+
+
+
+## 2025-12-17
+
+
+- Add dockerIgnore to ignore unecessary things([35cba4a](https://github.com/AAYUSKARKI/RestaurantQRify/commits/35cba4a0b7738532b4df92a1cb3a485d9cbfb49c) )
+
+
+
+## 2025-12-17
+
+
+- Install required package to handle file uploads([f1db054](https://github.com/AAYUSKARKI/RestaurantQRify/commits/f1db05475f25c09a68cc6d63c276d355ffd8e529) )
+
+
+
+## 2025-12-17
+
+
+- Add cloudinary to env example([e839228](https://github.com/AAYUSKARKI/RestaurantQRify/commits/e839228cf105ad6d6d1c39da674bcc22c90f0be6) )
+
+
+
+## 2025-12-17
+
+
+- Add a create menu item api([5b5d096](https://github.com/AAYUSKARKI/RestaurantQRify/commits/5b5d096345fa557069a10b89c2443c79f74d59dc) )
+
+
+
+## 2025-12-17
+
+
+- Ignore generated prisma client([56ca82e](https://github.com/AAYUSKARKI/RestaurantQRify/commits/56ca82e7571138ea95e825ab78dacc17efe4872d) )
+
+
+
+## 2025-12-17
+
+
+- *(logger)* Remove unused luxon import and defaultMeta([666b4eb](https://github.com/AAYUSKARKI/RestaurantQRify/commits/666b4eb79f7bb89cb56f37db55458f2db644b3a1) )
+
+
+
+## 2025-12-16
+
+
+- Update changelog to match today's task([c0d7f4f](https://github.com/AAYUSKARKI/RestaurantQRify/commits/c0d7f4f10cfb56218575ccbded9bf95fff2f3174) )
+
+
+
 ## 2025-12-16
 
 
