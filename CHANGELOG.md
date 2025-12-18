@@ -6,6 +6,139 @@ All notable changes to this project will be documented in this file.
 
 
 
+## 2025-12-18
+
+
+- *(menu-item)* Include nested allergens in menu item responses([16c8adf](https://github.com/AAYUSKARKI/RestaurantQRify/commits/16c8adffbfe402d592905b2f943612427e0c07cd) )
+
+
+
+## 2025-12-18
+
+
+- Implement menu item allergen linking and retrieval([e34086c](https://github.com/AAYUSKARKI/RestaurantQRify/commits/e34086ca5dd689cbdb0a9b5f5059a7740435950f) )
+
+
+
+## 2025-12-18
+
+
+- Allergen router mismatch fixed([44561cb](https://github.com/AAYUSKARKI/RestaurantQRify/commits/44561cbd7b551071dc5d881bdd3f86aea280da5e) )
+
+
+
+## 2025-12-18
+
+
+- Implement Allergen table CRUD operation([836a104](https://github.com/AAYUSKARKI/RestaurantQRify/commits/836a104a507d37b40d18c216c1988f68303fe37a) )
+
+
+
+## 2025-12-18
+
+
+- Run prisma generate in postinstall for reliable deployments([56cbdee](https://github.com/AAYUSKARKI/RestaurantQRify/commits/56cbdee361ec8966dc6d23ad18a369e85e718b6c) )
+
+
+
+## 2025-12-18
+
+
+- Merge with main([47a4959](https://github.com/AAYUSKARKI/RestaurantQRify/commits/47a49591f73b4cbccd247982d0b9877fcee33b36) )
+
+
+
+## 2025-12-18
+
+
+- Implement update and delete reservation([bc7cc68](https://github.com/AAYUSKARKI/RestaurantQRify/commits/bc7cc6860eb46dd5f84dedaf21bbadcf6c006848) )
+
+
+
+## 2025-12-18
+
+
+- Implement get all reservations([d367fd3](https://github.com/AAYUSKARKI/RestaurantQRify/commits/d367fd34272ab838c5a52a2f28d8ae4fa8036f17) )
+
+
+
+## 2025-12-18
+
+
+- Implement get reservation by id([981d341](https://github.com/AAYUSKARKI/RestaurantQRify/commits/981d34126752d8cca8df1c2a53c30e91fc8685c5) )
+
+
+
+## 2025-12-18
+
+
+- Implement retry logic and proper validation check([2add95f](https://github.com/AAYUSKARKI/RestaurantQRify/commits/2add95f30563428dbb19470a2cedf21f350cb31b) )
+
+
+
+## 2025-12-18
+
+
+- Transaction added and conflict check to prevent race condition([7c7c078](https://github.com/AAYUSKARKI/RestaurantQRify/commits/7c7c078837838ed77c9264b80960214832eadc08) )
+
+
+
+## 2025-12-18
+
+
+- Custom error included for consitency([64e0a5d](https://github.com/AAYUSKARKI/RestaurantQRify/commits/64e0a5d06b7c25a9a4def9185d48863b6d13109a) )
+
+
+
+## 2025-12-18
+
+
+- Add create reservation api([66f801d](https://github.com/AAYUSKARKI/RestaurantQRify/commits/66f801df78aa838926f28c5fb0e8e0665bd56146) )
+
+
+
+## 2025-12-18
+
+
+- Zod validation on  req body([590641a](https://github.com/AAYUSKARKI/RestaurantQRify/commits/590641a8974c286e9d586f15c2cb350706adb8f7) )
+
+
+
+## 2025-12-18
+
+
+- Add openAPI docs for reservation([937781d](https://github.com/AAYUSKARKI/RestaurantQRify/commits/937781de5d16f8fef209e7e76ce5f75860533090) )
+
+
+
+## 2025-12-18
+
+
+- Add reservation router into main app([c1fc1ac](https://github.com/AAYUSKARKI/RestaurantQRify/commits/c1fc1ac87f799ff5614a9862303985d0222de688) )
+
+
+
+## 2025-12-18
+
+
+- Merge main and feat/menu item([6acc36a](https://github.com/AAYUSKARKI/RestaurantQRify/commits/6acc36a984c11262795126ac830ffd38440ebf60) )
+
+
+
+## 2025-12-18
+
+
+- Merge branch 'main'  into feat/menuitem([0241f3b](https://github.com/AAYUSKARKI/RestaurantQRify/commits/0241f3b1d12265c33333890138e2598bc4935552) )
+
+
+
+## 2025-12-18
+
+
+- Update latest changelog([350d1d7](https://github.com/AAYUSKARKI/RestaurantQRify/commits/350d1d724d992a92a707a4d2c4580f394baf79e5) )
+
+
+
 ## 2025-12-17
 
 
