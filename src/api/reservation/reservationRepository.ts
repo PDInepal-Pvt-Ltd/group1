@@ -61,4 +61,20 @@ export class ReservationRepository {
             }
         });
     }
+
+    async findAll(): Promise<ReservationResponse[]> {
+        return prisma.reservation.findMany({
+            select: {
+                id: true,
+                tableId: true,
+                guestName: true,
+                guestPhone: true,
+                reservedAt: true,
+                reservedUntil: true,
+                durationMin: true,
+                guests: true,
+                status: true,
+            }
+        });
+    }
 }

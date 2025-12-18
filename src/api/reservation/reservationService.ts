@@ -87,5 +87,15 @@ export class ReservationService {
             return ServiceResponse.failure("Error getting reservation by id", null, StatusCodes.INTERNAL_SERVER_ERROR);
         }
     }
+
+    async getAllReservations(): Promise<ServiceResponse<ReservationResponse[] | null>> {
+        try {
+            const reservations = await this.reservationRepository.findAll();
+            return ServiceResponse.success<ReservationResponse[]>("Reservations found successfully", reservations, StatusCodes.OK);
+        } catch (error) {
+            logger.error("Error getting all reservations:", error);
+            return ServiceResponse.failure("Error getting all reservations", null, StatusCodes.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
     export const reservationService = new ReservationService();

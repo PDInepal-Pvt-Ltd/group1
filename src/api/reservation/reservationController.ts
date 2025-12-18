@@ -15,6 +15,11 @@ class ReservationController {
         const serviceResponse: ServiceResponse<ReservationResponse | null> = await reservationService.getReservationById(reservationId);
         return handleServiceResponse(serviceResponse, res);
     }
+
+    public getAllReservations: RequestHandler = async (req: Request, res: Response) => {
+        const serviceResponse: ServiceResponse<ReservationResponse[] | null> = await reservationService.getAllReservations();
+        return handleServiceResponse(serviceResponse, res);
+    }
 }
 
 export const reservationController = new ReservationController();

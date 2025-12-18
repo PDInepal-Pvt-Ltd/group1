@@ -57,3 +57,13 @@ reservationRegistry.registerPath({
 });
 
 reservationRouter.get("/reservation/:id", reservationController.getReservationById);
+
+reservationRegistry.registerPath({
+    method: "get",
+    path: "/api/reservation",
+    summary: "Get all reservations",
+    tags: ["Reservation"],
+    responses: createApiResponse(ReservationResponseSchema.array(), "Reservations found successfully", StatusCodes.OK),
+});
+
+reservationRouter.get("/reservation", reservationController.getAllReservations);
