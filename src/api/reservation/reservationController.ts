@@ -9,6 +9,12 @@ class ReservationController {
         const serviceResponse: ServiceResponse<ReservationResponse | null> = await reservationService.createReservation(data);
         return handleServiceResponse(serviceResponse, res);
     } 
+
+    public getReservationById: RequestHandler = async (req: Request, res: Response) => {
+        const reservationId = req.params.id;
+        const serviceResponse: ServiceResponse<ReservationResponse | null> = await reservationService.getReservationById(reservationId);
+        return handleServiceResponse(serviceResponse, res);
+    }
 }
 
 export const reservationController = new ReservationController();

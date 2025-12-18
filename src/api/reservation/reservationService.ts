@@ -74,5 +74,18 @@ export class ReservationService {
         logger.error(`Failed to create reservation after ${maxAttempts} attempts due to persistent conflicts.`);
         return ServiceResponse.failure("Failed to create reservation due to high demand. Please try again later.", null, StatusCodes.CONFLICT);
     }
+
+    async getReservationById(reservationId: string): Promise<ServiceResponse<ReservationResponse | null>> {
+        try {
+            const reservation = await this.reservationRepository.findById(reservationId);
+            if (!reservation) {
+                return ServiceResponse.failure("Reservation not found", null, StatusCodes.NOT_FOUND);
+            }
+            return ServiceResponse.success<ReservationResponse>("Reservation found successfully", reservation, StatusCodes.OK);
+        } catch (error) {
+            logger.error("Error getting reservation by id:", error);
+            return ServiceResponse.failure("Error getting reservation by id", null, StatusCodes.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
     export const reservationService = new ReservationService();

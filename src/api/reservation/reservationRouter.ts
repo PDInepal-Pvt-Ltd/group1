@@ -37,3 +37,23 @@ reservationRegistry.registerPath({
 });
 
 reservationRouter.post("/reservation", validateRequest(CreateReservationSchema), reservationController.createReservation);
+
+reservationRegistry.registerPath({
+    method: "get",
+    path: "/api/reservation/{id}",
+    summary: "Get a reservation by id",
+    tags: ["Reservation"],
+    parameters: [
+        {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+                type: "string",
+            },
+        },
+    ],
+    responses: createApiResponse(ReservationResponseSchema, "Reservation found successfully", StatusCodes.OK),
+});
+
+reservationRouter.get("/reservation/:id", reservationController.getReservationById);

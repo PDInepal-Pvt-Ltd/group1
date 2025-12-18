@@ -20,7 +20,7 @@ export class ReservationRepository {
             if (overlapping) {
                 throw new ConflictError('This table is already reserved for the selected time slot');
             }
-            
+
             const reservation = await tx.reservation.create({
                 data,
                 select: {
@@ -42,6 +42,23 @@ export class ReservationRepository {
             return reservation;
         }, {
             isolationLevel: 'Serializable'
+        });
+    }
+
+    async findById(reservationId: string): Promise<ReservationResponse | null> {
+        return prisma.reservation.findUnique({
+            where: { id: reservationId },
+            select: {
+                id: true,
+                tableId: true,
+                guestName: true,
+                guestPhone: true,
+                reservedAt: true,
+                reservedUntil: true,
+                durationMin: true,
+                guests: true,
+                status: true,
+            }
         });
     }
 }
