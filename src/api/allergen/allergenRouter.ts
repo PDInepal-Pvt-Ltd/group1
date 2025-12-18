@@ -26,7 +26,7 @@ allergenRegistry.registerPath({
     responses: createApiResponse(AllergenResponseSchema, "Allergen created successfully", StatusCodes.CREATED),
 });
 
-allergenRouter.post("/", verifyJWT, checkRole(["ADMIN"]), allergenController.createAllergen);
+allergenRouter.post("/allergen", verifyJWT, checkRole(["ADMIN"]), allergenController.createAllergen);
 
 allergenRegistry.registerPath({
     method: "get",
@@ -37,7 +37,7 @@ allergenRegistry.registerPath({
     responses: createApiResponse(AllergenResponseSchema.array(), "Allergens retrieved successfully", StatusCodes.OK),
 });
 
-allergenRouter.get("/", allergenController.getAllAllergens);
+allergenRouter.get("/allergen", allergenController.getAllAllergens);
 
 allergenRegistry.registerPath({
     method: "get",
@@ -58,7 +58,7 @@ allergenRegistry.registerPath({
     responses: createApiResponse(AllergenResponseSchema, "Allergen retrieved successfully", StatusCodes.OK),
 });
 
-allergenRouter.get("/:id", allergenController.getAllergenById);
+allergenRouter.get("/allergen/:id", allergenController.getAllergenById);
 
 allergenRegistry.registerPath({
     method: "put",
@@ -84,7 +84,7 @@ allergenRegistry.registerPath({
     responses: createApiResponse(AllergenResponseSchema, "Allergen updated successfully", StatusCodes.OK),
 });
 
-allergenRouter.put("/:id", verifyJWT, checkRole(["ADMIN"]), allergenController.updateAllergen);
+allergenRouter.put("/allergen/:id", verifyJWT, checkRole(["ADMIN"]), allergenController.updateAllergen);
 
 allergenRegistry.registerPath({
     method: "delete",
@@ -105,4 +105,4 @@ allergenRegistry.registerPath({
     responses: createApiResponse(AllergenResponseSchema, "Allergen deleted successfully", StatusCodes.OK),
 });
 
-allergenRouter.delete("/:id", verifyJWT, checkRole(["ADMIN"]), allergenController.deleteAllergen);
+allergenRouter.delete("/allergen/:id", verifyJWT, checkRole(["ADMIN"]), allergenController.deleteAllergen);
