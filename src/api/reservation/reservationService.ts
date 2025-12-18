@@ -4,6 +4,8 @@ import { ReservationRepository } from "./reservationRepository";
 import { TableRepository } from "../table/tableRepository";
 import { ServiceResponse } from "@/common/utils/serviceResponse";
 import logger from "@/common/utils/logger";
+import { ConflictError } from "@/common/utils/customError";
+import { Prisma } from "@/generated/prisma/client";
 
 export class ReservationService {
     private reservationRepository: ReservationRepository;
@@ -18,18 +20,59 @@ export class ReservationService {
     }
 
     async createReservation(data: CreateReservation): Promise<ServiceResponse<ReservationResponse | null>> {
-        try {
-            const table = await this.tableRepository.findById(data.tableId);
-            if (!table) {
-                return ServiceResponse.failure("Table not found", null, StatusCodes.NOT_FOUND);
+        const maxAttempts = 3;
+        let attempts = 0;
+
+        while (attempts < maxAttempts) {
+            try {
+                const table = await this.tableRepository.findById(data.tableId);
+                if (!table) {
+                    return ServiceResponse.failure("Table not found", null, StatusCodes.NOT_FOUND);
+                }
+
+                if (data.guests > table.seats) {
+                    return ServiceResponse.failure(`Table only has ${table.seats} seats, but ${data.guests} guests were requested`, null, StatusCodes.BAD_REQUEST);
+                }
+
+                const now = new Date();
+                const reservedAtDate = new Date(data.reservedAt);
+                const reservedUntilDate = new Date(data.reservedUntil);
+
+                if (reservedAtDate < now) {
+                    return ServiceResponse.failure("Reservation cannot be in the past", null, StatusCodes.BAD_REQUEST);
+                }
+
+                if (reservedUntilDate < now) {
+                    return ServiceResponse.failure("Reservation cannot be in the past", null, StatusCodes.BAD_REQUEST);
+                }
+
+                if (reservedUntilDate < reservedAtDate) {
+                    return ServiceResponse.failure("Reservation cannot end before it starts", null, StatusCodes.BAD_REQUEST);
+                }
+
+                const reservation = await this.reservationRepository.createReservation(data);
+
+                return ServiceResponse.success<ReservationResponse>("Reservation created successfully", reservation, StatusCodes.CREATED);
+                
+            } catch (error) {
+                if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2034') {
+                    attempts++;
+                    logger.warn(`Transaction failed due to serialization failure (attempt ${attempts}/${maxAttempts}). Retrying...`);
+                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempts) * 100));
+                    continue;
+                }
+
+                if (error instanceof ConflictError) {
+                    return ServiceResponse.failure(error.message, null, StatusCodes.CONFLICT);
+                }
+
+                logger.error("Error creating Reservation:", error);
+                return ServiceResponse.failure("Error creating Reservation", null, StatusCodes.INTERNAL_SERVER_ERROR);
             }
-            const reservation = await this.reservationRepository.createReservation(data);
-            return ServiceResponse.success<ReservationResponse>("Reservation created successfully", reservation, StatusCodes.CREATED);
-        } catch (error) {
-            logger.error("Error creating Reservation:", error);
-            return ServiceResponse.failure("Error creating Reservation", null, StatusCodes.INTERNAL_SERVER_ERROR);
         }
+
+        logger.error(`Failed to create reservation after ${maxAttempts} attempts due to persistent conflicts.`);
+        return ServiceResponse.failure("Failed to create reservation due to high demand. Please try again later.", null, StatusCodes.CONFLICT);
     }
 }
-
-export const reservationService = new ReservationService();
+    export const reservationService = new ReservationService();
