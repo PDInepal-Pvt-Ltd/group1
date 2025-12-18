@@ -30,6 +30,16 @@ export class MenuItemRepository {
                 isAvailable: true,
                 isVeg: true,
                 categoryId: true,
+                allergens: {
+                    select: {
+                        allergen: {
+                            select: {
+                                id: true,
+                                name: true
+                            }
+                        }
+                    }
+                }
             }
         });
     }
@@ -45,6 +55,16 @@ export class MenuItemRepository {
                 isAvailable: true,
                 isVeg: true,
                 categoryId: true,
+                allergens: {
+                    select: {
+                        allergen: {
+                            select: {
+                                id: true,
+                                name: true
+                            }
+                        }
+                    }
+                }
             }
         });
     }

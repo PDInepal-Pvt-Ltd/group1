@@ -36,6 +36,13 @@ export const UpdateMenuItemSchema = menuItemSchema.pick({
     categoryId: true,
 });
 
+export const MenuItemAllergenRelationSchema = z.object({
+    allergen: z.object({
+        id: z.string(),
+        name: z.string(),
+    }),
+});
+
 export const MenuItemResponseSchema = menuItemSchema.pick({
     id: true,
     name: true,
@@ -45,7 +52,9 @@ export const MenuItemResponseSchema = menuItemSchema.pick({
     isAvailable: true,
     isVeg: true,
     categoryId: true,
-});
+}).extend({
+    allergens: z.array(MenuItemAllergenRelationSchema).optional(),
+})
 
 export type MenuItem = z.infer<typeof menuItemSchema>;
 export type CreateMenuItem = z.infer<typeof CreateMenuItemSchema>;
