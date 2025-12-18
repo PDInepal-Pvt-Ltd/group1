@@ -5,6 +5,8 @@ import { menuItemRegistry } from "@/api/menuItem/menuItemRouter";
 import { categoryRegistry } from "@/api/category/categoryRouter";
 import { OpenAPIRegistry, OpenApiGeneratorV3 } from "@asteasolutions/zod-to-openapi";
 import { reservationRegistry } from "@/api/reservation/reservationRouter";
+import { allergenRegistry } from "@/api/allergen/allergenRouter";
+import { menuItemAllergenRegistry } from "@/api/menuItemAllergen/menuItemAllergenRouter";
 
 export type OpenAPIDocument = ReturnType<OpenApiGeneratorV3["generateDocument"]>;
 
