@@ -33,7 +33,7 @@ orderRegistry.registerPath({
             },
         },
     },
-    responses: createApiResponse(OrderResponseSchema, "Reservation created successfully", StatusCodes.CREATED),
+    responses: createApiResponse(OrderResponseSchema, "Order created successfully", StatusCodes.CREATED),
     security: [{ bearerAuth: [] }],
 });
 
