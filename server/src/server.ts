@@ -13,6 +13,7 @@ import { categoryRouter } from "./api/category/categoryRouter";
 import { reservationRouter } from "./api/reservation/reservationRouter";
 import { allergenRouter } from "./api/allergen/allergenRouter";
 import { menuItemAllergenRouter } from "./api/menuItemAllergen/menuItemAllergenRouter";
+import { orderRouter } from "./api/order/orderRouter";
 const app: Express = express();
 const server = http.createServer(app);
 
@@ -35,6 +36,7 @@ app.use("/api", categoryRouter);
 app.use("/api", reservationRouter);
 app.use("/api", allergenRouter);
 app.use("/api", menuItemAllergenRouter);
+app.use("/api", orderRouter);
 
 // OpenAPI Documentation
 app.use(openAPIRouter);
