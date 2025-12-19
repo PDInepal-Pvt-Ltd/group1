@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # 1. PostgreSQL Database Service
+  postgres:
+    image: postgres:16-alpine # Lightweight and stable PostgreSQL image
+    environment:
+      # These variables define the credentials for the application's access
+      POSTGRES_USER: rms_user
+      POSTGRES_PASSWORD: rms_password_secure
+      POSTGRES_DB: restaurantqrify_db
+    volumes:
+      # Ensure database data is persistent across restarts
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    restart: always
+    healthcheck:
+      # Checks if the database is ready to accept connections
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 2. Redis Caching/Queue Service
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes --requirepass rms_redis_password # Set a strong password
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-network
+    restart: always
+
+  # 3. Application Backend Service (RestaurantQRify API)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile # Uses the finalized Dockerfile you created
+    image: restaurantqrify-backend:latest
+    
+    # Direct port mapping: Host port 4000 -> Container port 4000
+    ports:
+      - "8000:8000" 
+
+    # Ensure DB and Redis are healthy before trying to start the API
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - app-network
+    # Note: Removed 'deploy: replicas: 3' as it's not needed for simple dev setup
+    restart: always
+
+# Define Named Volumes for Data Persistence
+volumes:
+  postgres_data:
+  redis_data:
+
+# Define the Network
+networks:
+  app-network:
+    driver: bridge

@@ -1,0 +1,355 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+generator dbml {
+  provider = "prisma-dbml-generator"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+// =========================
+// ENUMS
+// =========================
+enum Role {
+  ADMIN
+  CASHIER
+  WAITER
+  KITCHEN
+}
+
+enum TableStatus {
+  AVAILABLE
+  RESERVED
+  OCCUPIED
+  NEEDS_CLEANING
+}
+
+enum OrderStatus {
+  PENDING
+  PREPARING
+  READY
+  SERVED
+  CANCELLED
+}
+
+enum ReservationStatus {
+  ACTIVE
+  CANCELLED
+  NO_SHOW
+  COMPLETED
+}
+
+enum PaymentMode {
+  CASH
+  CARD
+  OTHER
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+// =========================
+// CORE ENTITIES
+// =========================
+model User {
+  id                           String         @id @default(uuid())
+  createdAt                    DateTime       @default(now())
+  updatedAt                    DateTime       @updatedAt
+  deletedAt                    DateTime?      // Soft delete
+  name                         String
+  email                        String         @unique
+  password                     String         // hashed (bcrypt in app logic)
+  role                         Role
+  isActive                     Boolean        @default(true)
+  forgotPasswordToken          String?        @unique
+  forgotPasswordTokenExpiresAt DateTime?
+
+  // Relations
+  assignedTables               Table[]        @relation("WaiterAssignedTables")
+  ordersCreated                Order[]        @relation("OrderCreator")
+  billsGenerated               Bill[]         @relation("BillCashier")
+  surplusMarks                 SurplusMark[]  @relation("SurplusMarker")
+  refreshTokens                RefreshToken[] // multi-device refresh tokens
+  kdsEvents                    KdsEvent[]     @relation("KdsEventActor")
+  auditLogs                    AuditLog[]     @relation("AuditLogUser")
+
+  @@index([email])
+  @@index([role, isActive])
+  @@index([deletedAt])
+}
+
+// Refresh tokens stored in separate table (supports multiple devices, revocation, metadata)
+model RefreshToken {
+  id         String   @id @default(uuid())
+  token      String   @unique
+  userId     String
+  createdAt  DateTime @default(now())
+  expiresAt  DateTime
+  revoked    Boolean  @default(false)
+  ip         String?
+  userAgent  String?
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revoked])
+}
+
+// =========================
+// TABLE & RESERVATION
+// =========================
+model Table {
+  id         String     @id @default(uuid())
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  deletedAt  DateTime?  // Soft delete
+  name       String
+  seats      Int
+  status     TableStatus @default(AVAILABLE)
+  assignedTo String?     // FK to User.id (nullable)
+
+  // Relations
+  assignedWaiter User?        @relation("WaiterAssignedTables", fields: [assignedTo], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  reservations   Reservation[]
+  orders         Order[]
+
+  @@unique([name]) // Ensure unique table naming for this deployment (adjust if multi-tenant later)
+  @@index([status, assignedTo])
+  @@index([deletedAt])
+}
+
+model Reservation {
+  id            String            @id @default(uuid())
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  deletedAt     DateTime?
+  tableId       String
+  guestName     String
+  guestPhone    String?
+  guests        Int
+  status        ReservationStatus @default(ACTIVE)
+  reservedAt    DateTime          // start time (timestamptz)
+  reservedUntil DateTime          // end time (timestamptz) - compute in app (reservedAt + durationMin)
+  durationMin   Int               @default(120) // default slot (minutes)
+  cancelledAt   DateTime?
+  completedAt   DateTime?
+
+  table         Table             @relation(fields: [tableId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([tableId, reservedAt, reservedUntil, status])
+  @@index([deletedAt])
+}
+
+// =========================
+// MENU
+// =========================
+model Category {
+  id        String    @id @default(uuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  name      String    @unique
+  imageUrl  String?
+
+  // Relations
+  items     MenuItem[]
+
+  @@index([name])
+  @@index([deletedAt])
+}
+
+model MenuItem {
+  id          String    @id @default(uuid())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+  name        String
+  description String?   @db.VarChar(200)
+  price       Decimal   @db.Decimal(10, 2)
+  imageUrl    String?   // prefer URL; keep base64 temporarily if required
+  isAvailable Boolean   @default(true)
+  isVeg       Boolean   @default(false)
+  categoryId  String
+
+  // Relations
+  category     Category           @relation(fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  orderItems   OrderItem[]
+  surplusMarks SurplusMark[]      @relation("SurplusForMenuItem")
+  allergens    MenuItemAllergen[]
+
+  @@index([categoryId, isAvailable, isVeg])
+  @@index([price])
+  @@index([deletedAt])
+  @@unique([name, categoryId]) // enforce unique name per category
+}
+
+// Normalized allergens (for better querying)
+model Allergen {
+  id    String     @id @default(uuid())
+  name  String     @unique
+  items MenuItemAllergen[]
+}
+
+model MenuItemAllergen {
+  id         String   @id @default(uuid())
+  menuItemId String
+  allergenId String
+
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  allergen   Allergen @relation(fields: [allergenId], references: [id], onDelete: Cascade)
+
+  @@unique([menuItemId, allergenId])
+}
+
+// =========================
+// ORDER & ORDER ITEM
+// =========================
+model Order {
+  id         String     @id @default(uuid())
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  deletedAt  DateTime?
+  tableId    String
+  status     OrderStatus @default(PENDING)
+  placedBy   String?     // free text: customer name or "QR-{table}"
+  qrSession  String?     // optional QR session id if relevant
+  notes      String?
+  createdBy  String?     // FK to User.id; nullable if POS/QR guest
+  isQrOrder  Boolean     @default(false)
+  subTotal   Decimal?    @db.Decimal(10,2) // optional denormalized subTotal snapshot
+  // Relations
+  table      Table      @relation(fields: [tableId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  creator    User?      @relation("OrderCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+  items      OrderItem[]
+  bill       Bill?
+  kdsEvents  KdsEvent[]
+
+  @@index([tableId, status, createdAt])
+  @@index([createdBy])
+  @@index([deletedAt])
+}
+
+model OrderItem {
+  id             String   @id @default(uuid())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  deletedAt      DateTime?
+  orderId        String
+  menuItemId     String
+  qty            Int
+  unitPrice      Decimal  @db.Decimal(10, 2) // snapshot at order time
+  subTotal       Decimal  @db.Decimal(10, 2) // qty * unitPrice (calculated in app; stored for speed)
+  notes          String?
+  payerName      String?  // For split billing
+  discountAmount Decimal  @db.Decimal(10, 2) @default("0.00") // numeric fixed discount applied to this line
+
+  // Relations
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  menuItem    MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([orderId, menuItemId])
+  @@index([deletedAt])
+}
+
+// =========================
+// KDS EVENTS / AUDIT
+// =========================
+model KdsEvent {
+  id           String    @id @default(uuid())
+  createdAt    DateTime  @default(now())
+  deletedAt    DateTime?
+  orderId      String
+  status       OrderStatus
+  timestamp    DateTime  @default(now())
+  minutesSpent Int?
+  actorId      String?   // who triggered the event (User.id)
+  notes        String?
+
+  order        Order     @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  actor        User?     @relation("KdsEventActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([orderId, timestamp])
+  @@index([deletedAt])
+}
+
+// =========================
+// FLASH-SALE (SURPLUS)
+// =========================
+model SurplusMark {
+  id           String   @id @default(uuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  deletedAt    DateTime?
+  menuItemId   String
+  markedBy     String   // FK to User.id
+  surplusAt    DateTime // When it becomes visible
+  surplusUntil DateTime // When sale ends (helpful for queries)
+  discountPct  Decimal  @db.Decimal(5, 2) // e.g., 30.00 -> 30%
+  note         String?
+
+  // Relations
+  menuItem     MenuItem @relation("SurplusForMenuItem", fields: [menuItemId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  marker       User     @relation("SurplusMarker", fields: [markedBy], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@unique([menuItemId, surplusAt]) // one active mark per exact start time
+  @@index([surplusAt, surplusUntil, menuItemId])
+  @@index([deletedAt])
+}
+
+// =========================
+// BILLING
+// =========================
+model Bill {
+  id             String       @id @default(uuid())
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  deletedAt      DateTime?
+  orderId        String       @unique
+  generatedAt    DateTime     @default(now())
+  generatedBy    String       // FK to User.id (cashier)
+  subTotal       Decimal      @db.Decimal(10, 2)
+  discountValue  Decimal      @db.Decimal(10, 2) @default("0.00") // numeric value
+  discountType   DiscountType @default(PERCENTAGE) // how to interpret discountValue
+  serviceCharge  Decimal      @db.Decimal(10, 2) @default("0.00")
+  taxPct         Decimal      @db.Decimal(5, 2)  @default("13.00")
+  taxAmount      Decimal      @db.Decimal(10, 2)
+  grandTotal     Decimal      @db.Decimal(10, 2)
+  paymentMode    PaymentMode
+  paidAt         DateTime?
+  isPaid         Boolean      @default(false)
+  pdfUrl         String?
+  invoiceSent    Boolean      @default(false)
+
+  // Relations
+  order          Order        @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  cashier        User         @relation("BillCashier", fields: [generatedBy], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([orderId, isPaid, generatedAt])
+  @@index([deletedAt])
+}
+
+// =========================
+// AUDIT LOG
+// =========================
+model AuditLog {
+  id           String   @id @default(uuid())
+  createdAt    DateTime @default(now())
+  userId       String?
+  action       String   // e.g., "ORDER_CREATE", "RESERVATION_UPDATE"
+  resourceType String?
+  resourceId   String?
+  payload      Json?    // optional details
+  ip           String?
+  userAgent    String?
+
+  user         User?    @relation("AuditLogUser", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+}
+

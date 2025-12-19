@@ -1,0 +1,299 @@
+//// ------------------------------------------------------
+//// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+//// ------------------------------------------------------
+
+Table User {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  deletedAt DateTime
+  name String [not null]
+  email String [unique, not null]
+  password String [not null]
+  role Role [not null]
+  isActive Boolean [not null, default: true]
+  forgotPasswordToken String [unique]
+  forgotPasswordTokenExpiresAt DateTime
+  assignedTables Table [not null]
+  ordersCreated Order [not null]
+  billsGenerated Bill [not null]
+  surplusMarks SurplusMark [not null]
+  refreshTokens RefreshToken [not null]
+  kdsEvents KdsEvent [not null]
+  auditLogs AuditLog [not null]
+}
+
+Table RefreshToken {
+  id String [pk]
+  token String [unique, not null]
+  userId String [not null]
+  createdAt DateTime [default: `now()`, not null]
+  expiresAt DateTime [not null]
+  revoked Boolean [not null, default: false]
+  ip String
+  userAgent String
+  user User [not null]
+}
+
+Table Table {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  deletedAt DateTime
+  name String [unique, not null]
+  seats Int [not null]
+  status TableStatus [not null, default: 'AVAILABLE']
+  assignedTo String
+  assignedWaiter User
+  reservations Reservation [not null]
+  orders Order [not null]
+}
+
+Table Reservation {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  deletedAt DateTime
+  tableId String [not null]
+  guestName String [not null]
+  guestPhone String
+  guests Int [not null]
+  status ReservationStatus [not null, default: 'ACTIVE']
+  reservedAt DateTime [not null]
+  reservedUntil DateTime [not null]
+  durationMin Int [not null, default: 120]
+  cancelledAt DateTime
+  completedAt DateTime
+  table Table [not null]
+}
+
+Table Category {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  deletedAt DateTime
+  name String [unique, not null]
+  imageUrl String
+  items MenuItem [not null]
+}
+
+Table MenuItem {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  deletedAt DateTime
+  name String [not null]
+  description String
+  price Decimal [not null]
+  imageUrl String
+  isAvailable Boolean [not null, default: true]
+  isVeg Boolean [not null, default: false]
+  categoryId String [not null]
+  category Category [not null]
+  orderItems OrderItem [not null]
+  surplusMarks SurplusMark [not null]
+  allergens MenuItemAllergen [not null]
+
+  indexes {
+    (name, categoryId) [unique]
+  }
+}
+
+Table Allergen {
+  id String [pk]
+  name String [unique, not null]
+  items MenuItemAllergen [not null]
+}
+
+Table MenuItemAllergen {
+  id String [pk]
+  menuItemId String [not null]
+  allergenId String [not null]
+  menuItem MenuItem [not null]
+  allergen Allergen [not null]
+
+  indexes {
+    (menuItemId, allergenId) [unique]
+  }
+}
+
+Table Order {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  deletedAt DateTime
+  tableId String [not null]
+  status OrderStatus [not null, default: 'PENDING']
+  placedBy String
+  qrSession String
+  notes String
+  createdBy String
+  isQrOrder Boolean [not null, default: false]
+  subTotal Decimal
+  table Table [not null]
+  creator User
+  items OrderItem [not null]
+  bill Bill
+  kdsEvents KdsEvent [not null]
+}
+
+Table OrderItem {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  deletedAt DateTime
+  orderId String [not null]
+  menuItemId String [not null]
+  qty Int [not null]
+  unitPrice Decimal [not null]
+  subTotal Decimal [not null]
+  notes String
+  payerName String
+  discountAmount Decimal [not null, default: 0]
+  order Order [not null]
+  menuItem MenuItem [not null]
+}
+
+Table KdsEvent {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  deletedAt DateTime
+  orderId String [not null]
+  status OrderStatus [not null]
+  timestamp DateTime [default: `now()`, not null]
+  minutesSpent Int
+  actorId String
+  notes String
+  order Order [not null]
+  actor User
+}
+
+Table SurplusMark {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  deletedAt DateTime
+  menuItemId String [not null]
+  markedBy String [not null]
+  surplusAt DateTime [not null]
+  surplusUntil DateTime [not null]
+  discountPct Decimal [not null]
+  note String
+  menuItem MenuItem [not null]
+  marker User [not null]
+
+  indexes {
+    (menuItemId, surplusAt) [unique]
+  }
+}
+
+Table Bill {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  deletedAt DateTime
+  orderId String [unique, not null]
+  generatedAt DateTime [default: `now()`, not null]
+  generatedBy String [not null]
+  subTotal Decimal [not null]
+  discountValue Decimal [not null, default: 0]
+  discountType DiscountType [not null, default: 'PERCENTAGE']
+  serviceCharge Decimal [not null, default: 0]
+  taxPct Decimal [not null, default: 13]
+  taxAmount Decimal [not null]
+  grandTotal Decimal [not null]
+  paymentMode PaymentMode [not null]
+  paidAt DateTime
+  isPaid Boolean [not null, default: false]
+  pdfUrl String
+  invoiceSent Boolean [not null, default: false]
+  order Order [not null]
+  cashier User [not null]
+}
+
+Table AuditLog {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  userId String
+  action String [not null]
+  resourceType String
+  resourceId String
+  payload Json
+  ip String
+  userAgent String
+  user User
+}
+
+Enum Role {
+  ADMIN
+  CASHIER
+  WAITER
+  KITCHEN
+}
+
+Enum TableStatus {
+  AVAILABLE
+  RESERVED
+  OCCUPIED
+  NEEDS_CLEANING
+}
+
+Enum OrderStatus {
+  PENDING
+  PREPARING
+  READY
+  SERVED
+  CANCELLED
+}
+
+Enum ReservationStatus {
+  ACTIVE
+  CANCELLED
+  NO_SHOW
+  COMPLETED
+}
+
+Enum PaymentMode {
+  CASH
+  CARD
+  OTHER
+}
+
+Enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+Ref: RefreshToken.userId > User.id [delete: Cascade]
+
+Ref: Table.assignedTo > User.id [delete: Set Null]
+
+Ref: Reservation.tableId > Table.id [delete: Cascade]
+
+Ref: MenuItem.categoryId > Category.id [delete: Cascade]
+
+Ref: MenuItemAllergen.menuItemId > MenuItem.id [delete: Cascade]
+
+Ref: MenuItemAllergen.allergenId > Allergen.id [delete: Cascade]
+
+Ref: Order.tableId > Table.id [delete: Cascade]
+
+Ref: Order.createdBy > User.id [delete: Set Null]
+
+Ref: OrderItem.orderId > Order.id [delete: Cascade]
+
+Ref: OrderItem.menuItemId > MenuItem.id [delete: Restrict]
+
+Ref: KdsEvent.orderId > Order.id [delete: Cascade]
+
+Ref: KdsEvent.actorId > User.id [delete: Set Null]
+
+Ref: SurplusMark.menuItemId > MenuItem.id [delete: Cascade]
+
+Ref: SurplusMark.markedBy > User.id [delete: Restrict]
+
+Ref: Bill.orderId - Order.id [delete: Cascade]
+
+Ref: Bill.generatedBy > User.id [delete: Restrict]
+
+Ref: AuditLog.userId > User.id [delete: Set Null]

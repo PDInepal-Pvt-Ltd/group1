@@ -1,0 +1,72 @@
+{
+  "name": "restaurantqrify",
+  "version": "1.0.0",
+  "description": "<p align=\"center\">\r   <img src=\"https://img.shields.io/badge/Node.js-18%2B-green\" />\r   <img src=\"https://img.shields.io/badge/TypeScript-Ready-blue\" />\r   <img src=\"https://img.shields.io/badge/Prisma-ORM-2D3748?logo=prisma\" />\r   <img src=\"https://img.shields.io/badge/PostgreSQL-Database-336791?logo=postgresql\" />\r   <img src=\"https://img.shields.io/badge/License-MIT-yellow\" />\r </p>",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node --import=tsx --env-file=.env --watch src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "changelog": "npx git-cliff -c .cliff.toml > CHANGELOG.md",
+    "postinstall": "prisma generate",
+    "prepare": "npx husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AAYUSKARKI/RestaurantQRify.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/AAYUSKARKI/RestaurantQRify/issues"
+  },
+  "homepage": "https://github.com/AAYUSKARKI/RestaurantQRify#readme",
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@tsconfig/node22": "^22.0.5",
+    "@types/bcrypt": "^6.0.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/luxon": "^3.7.1",
+    "@types/memory-cache": "^0.2.6",
+    "@types/multer": "^2.0.0",
+    "@types/node": "^25.0.2",
+    "@types/pg": "^8.16.0",
+    "@types/swagger-ui-express": "^4.1.8",
+    "eslint": "^9.39.2",
+    "eslint-plugin-perfectionist": "^4.15.1",
+    "prettier": "^3.7.4",
+    "prisma": "^7.1.0",
+    "prisma-dbml-generator": "^0.12.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.49.0"
+  },
+  "dependencies": {
+    "@asteasolutions/zod-to-openapi": "^8.2.0",
+    "@prisma/adapter-pg": "^7.1.0",
+    "@prisma/client": "^7.1.0",
+    "bcrypt": "^6.0.0",
+    "bullmq": "^5.66.0",
+    "cloudinary": "^2.8.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.2.1",
+    "git-cliff": "^2.11.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "luxon": "^3.7.2",
+    "memory-cache": "^0.2.0",
+    "multer": "^2.0.2",
+    "pg": "^8.16.3",
+    "redis": "^5.10.0",
+    "swagger-ui-express": "^5.0.1",
+    "uuid": "^13.0.0",
+    "winston": "^3.19.0",
+    "winston-daily-rotate-file": "^5.0.0",
+    "zod": "^4.1.13"
+  }
+}
