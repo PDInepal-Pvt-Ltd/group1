@@ -54,7 +54,11 @@ export class OrderRepository {
                     id: createdOrder.id,
                 },
                 include: {
-                    items: true,
+                    items: {
+                        include: {
+                            menuItem: true
+                        }
+                    }
                 },
             });
         },{
@@ -66,7 +70,11 @@ export class OrderRepository {
         return prisma.order.findUnique({
             where: { id },
             include: {
-                items: true,
+                items: {
+                    include: {
+                        menuItem: true
+                    }
+                }
             },
         });
     }
@@ -74,7 +82,11 @@ export class OrderRepository {
     async findAllOrders(): Promise<OrderResponse[]> {
         return prisma.order.findMany({
             include: {
-                items: true,
+                items: {
+                    include: {
+                        menuItem: true
+                    }
+                }
             },
         });
     }
