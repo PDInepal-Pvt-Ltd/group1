@@ -129,7 +129,7 @@ Table Order {
   notes String
   createdBy String
   isQrOrder Boolean [not null, default: false]
-  subTotal Decimal
+  subTotal Decimal [not null]
   table Table [not null]
   creator User
   items OrderItem [not null]
