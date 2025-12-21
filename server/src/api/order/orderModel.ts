@@ -1,5 +1,6 @@
 import { OrderStatus, Prisma } from "@/generated/prisma/client";
 import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
+import { menuItemSchema } from "../menuItem/menuItemModel";
 import { z } from "zod";
 
 extendZodWithOpenApi(z);
@@ -41,8 +42,8 @@ export const orderSchema = z.object({
     notes: z.string().nullable().openapi({ description: "Additional notes for the order", example: "Special instructions" }),
     createdBy: z.string().nullable().openapi({ description: "User ID who created the order (POS or waiter)", example: "123e4567-e89b-12d3-a456-426655440000" }),
     isQrOrder: z.boolean().openapi({ description: "Whether the order was placed via QR code", example: true }),
-    subTotal: z.union([z.string(), z.number()]).nullable().transform((val) => val !== null ? new Prisma.Decimal(val) : null).openapi({ description: "Order subtotal", example: 19.99 }),
-    items: z.array(CreateOrderItemSchema).optional().openapi({ description: "List of items in the order", example: [{ menuItemId: "123e4567-e89b-12d3-a456-426655440000", qty: 2, unitPrice: 9.99, subTotal: 19.98 }] }),
+    subTotal: z.union([z.string(), z.number()]).refine((val) => !isNaN(Number(val)), { message: "Subtotal must be a number" }).transform((val) => new Prisma.Decimal(val)).openapi({ description: "Order subtotal", example: 19.99 }),
+    items: z.array(CreateOrderItemSchema).min(1).openapi({ description: "List of items in the order", example: [{ menuItemId: "123e4567-e89b-12d3-a456-426655440000", qty: 2, unitPrice: 9.99, subTotal: 19.98 }] }),
 });
 
 export const CreateOrderSchema = orderSchema.pick({
@@ -63,8 +64,12 @@ export const UpdateOrderSchema = z.object({
     items: z.array(CreateOrderItemSchema).optional(),
 });
 
+export const OrderItemWithMenuSchema = orderItemSchema.extend({
+  menuItem: menuItemSchema,
+});
+
 export const OrderResponseSchema = orderSchema.extend({
-    items: z.array(orderItemSchema).optional(),
+    items: z.array(OrderItemWithMenuSchema),
 });
 
 export type Order = z.infer<typeof orderSchema>;
