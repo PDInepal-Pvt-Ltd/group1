@@ -41,7 +41,7 @@ export class SurplusRepository {
     }
 
     async findSurplusMarkByMenuItemId(menuItemId: string): Promise<{ discountPct: Prisma.Decimal } | null> {
-        return prisma.surplusMark.findFirst({
+        const surplusMark = await prisma.surplusMark.findFirst({
             where: {
                 menuItemId,
                 surplusAt: { lte: new Date() },
@@ -52,6 +52,8 @@ export class SurplusRepository {
                 discountPct: true
             }
         });
+
+        return surplusMark;
     }
 
     async findActiveSurplusMark(): Promise<SurplusMarkResponse[] | null> {
