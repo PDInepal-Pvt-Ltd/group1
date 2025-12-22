@@ -9,6 +9,7 @@ import { allergenRegistry } from "@/api/allergen/allergenRouter";
 import { menuItemAllergenRegistry } from "@/api/menuItemAllergen/menuItemAllergenRouter";
 import { orderRegistry } from "@/api/order/orderRouter";
 import { billRegistry } from "@/api/bill/billRouter";
+import { surplusRegistry } from "@/api/surplus/surplusRouter";
 
 export type OpenAPIDocument = ReturnType<OpenApiGeneratorV3["generateDocument"]>;
 
@@ -23,7 +24,8 @@ export function generateOpenAPIDocument(): OpenAPIDocument {
 		allergenRegistry,
 		menuItemAllergenRegistry,
 		orderRegistry,
-		billRegistry
+		billRegistry,
+		surplusRegistry
 	]);
 	const generator = new OpenApiGeneratorV3(registry.definitions);
 
