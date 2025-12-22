@@ -6,6 +6,97 @@ All notable changes to this project will be documented in this file.
 
 
 
+## 2025-12-22
+
+
+- Add query to findSurplusMarkByMenuItemId([3611329](https://github.com/AAYUSKARKI/RestaurantQRify/commits/3611329313655c4229f6fbc6e399e48ef12a6e42) )
+
+
+
+## 2025-12-22
+
+
+- Implement dynamic pricing based on surplus mark([1690fd5](https://github.com/AAYUSKARKI/RestaurantQRify/commits/1690fd5e82900a6ec5ff27d4792e30b1416f8147) )
+
+
+
+## 2025-12-22
+
+
+- Include surplus marks on findAvailablByIds Query([a4610c3](https://github.com/AAYUSKARKI/RestaurantQRify/commits/a4610c3608bfad7219237dafb665c6dbae0e8280) )
+
+
+
+## 2025-12-22
+
+
+- Add findSurplusMarkByMenuItemId([4a2ea2e](https://github.com/AAYUSKARKI/RestaurantQRify/commits/4a2ea2e7b77ed5b3a7c3a645d92f953041597962) )
+
+
+
+## 2025-12-22
+
+
+- Get,update,soft delete surplus mark([fa7dae1](https://github.com/AAYUSKARKI/RestaurantQRify/commits/fa7dae19e99e1848a9e3f6469c2e9c9e5d6c33e5) )
+
+
+
+## 2025-12-22
+
+
+- Remove surplus mark([c7334d0](https://github.com/AAYUSKARKI/RestaurantQRify/commits/c7334d0522869e29a78dfd2e0fbcc2408f98cc0d) )
+
+
+
+## 2025-12-22
+
+
+- Get all active daily specials([5befda3](https://github.com/AAYUSKARKI/RestaurantQRify/commits/5befda308811af3afbebb8a9892d2fbcc8658109) )
+
+
+
+## 2025-12-22
+
+
+- Add create surplus mark API([a931aca](https://github.com/AAYUSKARKI/RestaurantQRify/commits/a931aca0c8699fc0a7412bc585a95416508c638d) )
+
+
+
+## 2025-12-22
+
+
+- Integrate surplus router into main app([611314a](https://github.com/AAYUSKARKI/RestaurantQRify/commits/611314ae53069f8d4eb6af9073dd9bbcb1ca7c0d) )
+
+
+
+## 2025-12-22
+
+
+- Add openAPI docs for surplus mark([a4c7f00](https://github.com/AAYUSKARKI/RestaurantQRify/commits/a4c7f005da61085ca1186ce4290c8e494226ea09) )
+
+
+
+## 2025-12-22
+
+
+- Add audit actions for surplus mark([99dc526](https://github.com/AAYUSKARKI/RestaurantQRify/commits/99dc526b760ca2e78abc69ae19aa5a7d40bb530f) )
+
+
+
+## 2025-12-22
+
+
+- Script to seed admin user([56d6bc1](https://github.com/AAYUSKARKI/RestaurantQRify/commits/56d6bc1b04ae5fe9d054ddae07353174854e5460) )
+
+
+
+## 2025-12-21
+
+
+- Update changlog([b3f67e2](https://github.com/AAYUSKARKI/RestaurantQRify/commits/b3f67e28928ea5715283ddbff5d2e063c5073b56) )
+
+
+
 ## 2025-12-21
 
 
