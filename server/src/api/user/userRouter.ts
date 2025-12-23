@@ -1,7 +1,7 @@
 import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import { Router } from "express";
 import { createApiResponse } from "@/api-docs/openAPIResponseBuilders";
-import { CreateUserSchema, UserResponseSchema, userSchema, LoginResponseSchema, LoginUserSchema, RefreshSessionResponseSchema, UpdateUserSchema } from "./userModel";
+import { CreateUserSchema, UserResponseSchema, userSchema, LoginResponseSchema, LoginUserSchema, RefreshSessionResponseSchema, UpdateUserSchema, ResetPasswordSchema, ForgotPasswordSchema } from "./userModel";
 import { userController } from "./userController";
 import { StatusCodes } from "http-status-codes";
 import { verifyJWT } from "@/common/middleware/verifyJWT";
@@ -183,6 +183,59 @@ userRegistry.registerPath({
 });
 
 userRouter.put("/user/:id",authRateLimiter, verifyJWT, userController.updateUser);
+
+userRegistry.registerPath({
+    method: "post",
+    path: "/api/user/forgot-password",
+    summary: "Forgot user password",
+    tags: ["User"],
+    request: {
+        body: {
+            description: "User object that needs to be updated",
+            required: true,
+            content: {
+                "application/json": {
+                    schema: ForgotPasswordSchema,
+                },
+            },
+        },
+    },
+    responses: createApiResponse(UserResponseSchema, "Password reset link sent successfully", StatusCodes.OK),
+});
+
+userRouter.post("/user/forgot-password",authRateLimiter, userController.forgotPassword);
+
+userRegistry.registerPath({
+    method: "patch",
+    path: "/api/user/reset-password/{token}",
+    summary: "Reset user password by token",
+    tags: ["User"],
+    request: {
+        body: {
+            description: "Reset password object that needs to be updated",
+            required: true,
+            content: {
+                "application/json": {
+                    schema: ResetPasswordSchema,
+                },
+            },
+        },
+    },
+    parameters: [
+        {
+            name: "token",
+            in: "path",
+            required: true,
+            schema: {
+                type: "string",
+            },
+        },
+    ],
+    responses: createApiResponse(UserResponseSchema, "Password reset successfully", StatusCodes.OK),
+});
+
+userRouter.post("/user/reset-password/:token",authRateLimiter, userController.resetPassword);
+    
 
 userRegistry.registerPath({
     method: "delete",
