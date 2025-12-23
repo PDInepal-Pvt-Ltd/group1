@@ -1,5 +1,5 @@
 import { StatusCodes } from "http-status-codes";
-import type { UserResponse, CreateUser, LoginUser, LoginResponse, UpdateUser } from "./userModel";
+import type { UserResponse, CreateUser, LoginUser, LoginResponse, UpdateUser, ForgotPassword, ResetPassword } from "./userModel";
 import { UserRepository } from "./userRepository";
 import { ServiceResponse } from "@/common/utils/serviceResponse";
 import { AuditLogQueue } from "@/queues/instances/auditlogQueue";
@@ -9,6 +9,8 @@ import jwt, { Secret } from "jsonwebtoken";
 import { tokenBlacklistService } from "@/common/services/tokenBlacklistService";
 import { AUTH_AUDIT_ACTIONS } from "@/common/constants/authAuditActions";
 import logger from "@/common/utils/logger";
+import crypto from "crypto";
+import { sendEmailService } from "@/common/services/sendEmailService";
 
 export class UserService {
     private auditLogQueue = new AuditLogQueue();
@@ -290,6 +292,41 @@ export class UserService {
         } catch (error) {
             logger.error("Error deleting user:", error);
             return ServiceResponse.failure("Error deleting user", null, StatusCodes.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    async forgotPassword(data: ForgotPassword): Promise<ServiceResponse<null>> {
+        try {
+            const user = await this.userRepository.findUserByEmail(data.email);
+            if (!user) {
+                return ServiceResponse.failure("Email Does Not Exist", null, StatusCodes.NOT_FOUND);
+            }
+
+            const resetToken = crypto.randomBytes(32).toString("hex");
+            const resetTokenExpiry = new Date(Date.now() + 15 * 60 * 1000); 
+            await this.userRepository.createPasswordResetToken(user.id, resetToken, resetTokenExpiry);
+
+            await sendEmailService.sendResetPasswordEmail(data.email, resetToken);
+            return ServiceResponse.success("Password reset email sent successfully", null, StatusCodes.OK);
+        } catch (error) {
+            logger.error("Error sending password reset email:", error);
+            return ServiceResponse.failure("Error sending password reset email", null, StatusCodes.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    async resetPassword(token: string, data: ResetPassword): Promise<ServiceResponse<null>> {
+        try {
+            const user = await this.userRepository.findUserByToken(token);
+            if (!user) {
+                return ServiceResponse.failure("Invalid or expired token", null, StatusCodes.BAD_REQUEST);
+            }
+
+            const hashedPassword = await bcrypt.hash(data.password, 10);
+            await this.userRepository.updatePassword(user.id, hashedPassword);
+            return ServiceResponse.success("Password reset successfully", null, StatusCodes.OK);
+        } catch (error) {
+            logger.error("Error resetting password:", error);
+            return ServiceResponse.failure("Error resetting password", null, StatusCodes.INTERNAL_SERVER_ERROR);
         }
     }
 }

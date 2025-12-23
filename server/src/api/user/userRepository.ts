@@ -103,11 +103,55 @@ export class UserRepository {
         })
     }
 
+    async createPasswordResetToken(userId: string, token: string, expiresAt: Date): Promise<void> {
+        await prisma.user.update({
+            where: { id: userId },
+            data: {
+                forgotPasswordToken: token,
+                forgotPasswordTokenExpiresAt: expiresAt
+            }
+        })
+    }
+
     async deleteUser(userId: string): Promise<UserResponse> {
         return prisma.user.update({
             where: { id: userId },
             data: {
                 deletedAt: new Date()
+            },
+            select: {
+                email: true,
+                name: true,
+                id: true,
+                role: true,
+                isActive: true
+            }
+        })
+    }
+
+    async findUserByToken(token: string): Promise<UserResponse | null> {
+        return prisma.user.findFirst({
+            where: {
+                forgotPasswordToken: token,
+                forgotPasswordTokenExpiresAt: { gt: new Date() }
+            },
+            select: {
+                email: true,
+                name: true,
+                id: true,
+                role: true,
+                isActive: true
+            }
+        })
+    }  
+    
+    async updatePassword(userId: string, password: string): Promise<UserResponse> {
+        return prisma.user.update({
+            where: { id: userId },
+            data: {
+                password,
+                forgotPasswordToken: null,
+                forgotPasswordTokenExpiresAt: null
             },
             select: {
                 email: true,

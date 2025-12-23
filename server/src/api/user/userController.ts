@@ -1,6 +1,6 @@
 import { Request, RequestHandler, Response } from "express";
 import { ServiceResponse, handleServiceResponse } from "@/common/utils/serviceResponse";
-import { CreateUserSchema, LoginResponse, LoginUserSchema, UpdateUserSchema, UserResponse } from "./userModel";
+import { CreateUserSchema, ForgotPasswordSchema, LoginResponse, LoginUserSchema, ResetPasswordSchema, UpdateUserSchema, UserResponse } from "./userModel";
 import { userService } from "./userService";
 import { StatusCodes } from "http-status-codes";
 
@@ -64,6 +64,18 @@ class UserController {
         const serviceResponse: ServiceResponse<UserResponse | null> = await userService.deleteUser(req.params.id);
         return handleServiceResponse(serviceResponse,res);
 
+    }
+
+    public forgotPassword: RequestHandler = async (req:Request, res:Response) => {
+        const data = ForgotPasswordSchema.parse(req.body);
+        const serviceResponse: ServiceResponse<null> = await userService.forgotPassword(data);
+        return handleServiceResponse(serviceResponse,res);
+    }
+
+    public resetPassword: RequestHandler = async (req:Request, res:Response) => {
+        const data = ResetPasswordSchema.parse(req.body);
+        const serviceResponse: ServiceResponse<null> = await userService.resetPassword(req.params.token,data);
+        return handleServiceResponse(serviceResponse,res);
     }
 }
 

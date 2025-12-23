@@ -75,7 +75,6 @@ export const ForgotPasswordSchema = z.object({
 });
 
 export const ResetPasswordSchema = z.object({
-  token: z.string().openapi({ description: "Password reset token", example: "123e4567-e89b-12d3-a456-426655440000"}),
   password: z.string().openapi({ description: "New password", example: "password"}),
 });
 
