@@ -41,6 +41,27 @@ export const BillResponseSchema = billSchema.extend({
     invoiceSent: z.boolean().openapi({ description: "Indicates if the invoice has been sent", example: true }),
 })
 
+export const DailyReportSchema = z.object({
+  date: z.string().openapi({ description: "Date for the daily report", example: "2022-01-01" }),
+  totalRevenue: z.number().openapi({ description: "Total revenue for the day", example: 100.50 }),
+  totalOrders: z.number().openapi({ description: "Total number of orders for the day", example: 5 }),
+  taxCollected: z.number().openapi({ description: "Total tax collected for the day", example: 10.25 }),
+  serviceCharges: z.number().openapi({ description: "Total service charges for the day", example: 2.75 }),
+  discountsGiven: z.number().openapi({ description: "Total discounts given for the day", example: 3.50 }),
+  breakdownByPaymentMode: z.array(z.object({
+    paymentMode: z.enum(PaymentMode),
+    amount: z.number(),
+    count: z.number()
+  })),
+  topSellingItems: z.array(z.object({
+    name: z.string(),
+    quantity: z.number(),
+    revenue: z.number()
+  })).optional()
+});
+
+export type DailyReport = z.infer<typeof DailyReportSchema>;
+
 export type CreateBill = z.infer<typeof CreateBillSchema>;
 export type Bill = z.infer<typeof billSchema>;
 export type BillResponse = z.infer<typeof BillResponseSchema>;

@@ -33,6 +33,18 @@ class BillController {
         const serviceResponse = await billService.confirmPayment(billId, paymentMode, req.user.id);
         return handleServiceResponse(serviceResponse, res);
     }
+
+    public getDailyReport: RequestHandler = async (req: Request, res: Response) => {
+        const dateQuery = req.query.date as string;
+        const date = dateQuery ? new Date(dateQuery) : new Date();
+
+        if (isNaN(date.getTime())) {
+            return handleServiceResponse(ServiceResponse.failure("Invalid date format", null, 400), res);
+        }
+
+        const serviceResponse = await billService.getDailyRevenueReport(date);
+        return handleServiceResponse(serviceResponse, res);
+    };
 }
 
 export const billController = new BillController();

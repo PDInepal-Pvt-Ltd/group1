@@ -114,3 +114,26 @@ billRegistry.registerPath({
 });
 
 billRouter.post("/bill/:id/pay", verifyJWT, checkRole([Role.ADMIN, Role.CASHIER]), billController.payBill);
+
+billRegistry.registerPath({
+    method: "get",
+    path: "/api/bill/daily-report",
+    parameters: [
+        {
+            name: "date",
+            in: "query",
+            required: false,
+            schema: {
+                type: "string",
+            },
+            description: "Date in YYYY-MM-DD format",
+            example: "2023-08-15",
+        },
+    ],
+    summary: "Get daily report for a specific date",
+    tags: ["Bill"],
+    security: [{ bearerAuth: [] }],
+    responses: createApiResponse(BillResponseSchema, "Daily report retrieved successfully", StatusCodes.OK),
+});
+
+billRouter.get("/bill/daily-report", verifyJWT, checkRole([Role.ADMIN, Role.CASHIER]), billController.getDailyReport);
