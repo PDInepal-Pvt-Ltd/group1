@@ -1,5 +1,5 @@
-import { Prisma } from "@/generated/prisma/client";
-import { BillResponse, CreateBill } from "./billModel";
+import { PaymentMode, Prisma } from "@/generated/prisma/client";
+import { BillResponse, CreateBill, DailyReport } from "./billModel";
 import { prisma } from "@/common/lib/prisma";
 
 export class BillRepository {
@@ -52,5 +52,55 @@ export class BillRepository {
             }
         });
         return bill;
+    }
+
+    async findById(id: string): Promise<BillResponse | null> {
+        return await prisma.bill.findUnique({
+            where: { id, deletedAt: null },
+            include: { order: { include: { items: { include: { menuItem: true } } } } }
+        });
+    }
+
+    async findAll(): Promise<BillResponse[]> {
+        return await prisma.bill.findMany({ include: { order: { include: { items: { include: { menuItem: true } } } } } });
+    }
+
+    async markAsPaid(id: string, paymentMode: PaymentMode): Promise<BillResponse> {
+        return await prisma.bill.update({ where: { id }, data: { isPaid: true, paymentMode }, include: { order: { include: { items: { include: { menuItem: true } } } } } });
+    }
+
+    async getDailyStats(startDate: Date, endDate: Date) {
+        const aggregations = await prisma.bill.aggregate({
+            where: {
+                paidAt: { gte: startDate, lte: endDate },
+                isPaid: true,
+                deletedAt: null,
+            },
+            _sum: {
+                grandTotal: true,
+                taxAmount: true,
+                serviceCharge: true,
+                discountValue: true,
+            },
+            _count: {
+                id: true,
+            },
+        });
+
+        const paymentModeBreakdown = await prisma.bill.groupBy({
+            by: ['paymentMode'],
+            where: {
+                paidAt: { gte: startDate, lte: endDate },
+                isPaid: true,
+                deletedAt: null,
+            },
+            _sum: { grandTotal: true },
+            _count: { id: true },
+        });
+
+        return {
+            aggregations,
+            paymentModeBreakdown,
+        };
     }
 }

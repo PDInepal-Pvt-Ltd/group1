@@ -11,6 +11,7 @@ import { orderRegistry } from "@/api/order/orderRouter";
 import { billRegistry } from "@/api/bill/billRouter";
 import { surplusRegistry } from "@/api/surplus/surplusRouter";
 import { auditLogRegistry } from "@/api/auditlog/auditlogRouter";
+import { kdsEventRegistry } from "@/api/kds/kdsEventRouter";
 
 export type OpenAPIDocument = ReturnType<OpenApiGeneratorV3["generateDocument"]>;
 
@@ -27,6 +28,7 @@ export function generateOpenAPIDocument(): OpenAPIDocument {
 		orderRegistry,
 		billRegistry,
 		surplusRegistry,
+		kdsEventRegistry,
 		auditLogRegistry
 	]);
 	const generator = new OpenApiGeneratorV3(registry.definitions);

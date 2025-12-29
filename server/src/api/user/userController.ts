@@ -77,6 +77,15 @@ class UserController {
         const serviceResponse: ServiceResponse<null> = await userService.resetPassword(req.params.token,data);
         return handleServiceResponse(serviceResponse,res);
     }
+
+    public getMe: RequestHandler = async (req:Request, res:Response) => {
+        const user = req.user;
+        if (!user) {
+            return handleServiceResponse(ServiceResponse.failure("Unauthorized", null, StatusCodes.UNAUTHORIZED), res);
+        }
+        const serviceResponse: ServiceResponse<UserResponse | null> = await userService.getUserById(user.id);
+        return handleServiceResponse(serviceResponse, res);
+    }
 }
 
 export const userController = new UserController();

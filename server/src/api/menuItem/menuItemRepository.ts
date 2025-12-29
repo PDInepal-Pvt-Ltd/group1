@@ -56,6 +56,16 @@ export class MenuItemRepository {
                 isAvailable: true,
                 isVeg: true,
                 categoryId: true,
+                surplusMarks: {
+                    where: {
+                        surplusAt: { lte: new Date() },
+                        surplusUntil: { gte: new Date() },
+                        deletedAt: null
+                    },
+                    select: {
+                        discountPct: true
+                    }
+                },
                 allergens: {
                     select: {
                         allergen: {
@@ -70,9 +80,9 @@ export class MenuItemRepository {
         });
     }
 
-    async findAvailableByIds(menuItemIds: string[]): Promise<Array<{ id: string; price: Prisma.Decimal, surplusMarks: { discountPct: Prisma.Decimal }[]}>> {
+    async findAvailableByIds(menuItemIds: string[]): Promise<Array<{ id: string; price: Prisma.Decimal, surplusMarks: { discountPct: Prisma.Decimal }[] }>> {
         return prisma.menuItem.findMany({
-            where: { 
+            where: {
                 id: {
                     in: menuItemIds
                 },
@@ -94,7 +104,7 @@ export class MenuItemRepository {
                     take: 1
                 }
             }
-        })   
+        })
     }
 
     async findByCategory(categoryId: string): Promise<MenuItemResponse[]> {

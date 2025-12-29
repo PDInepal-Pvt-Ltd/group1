@@ -13,7 +13,7 @@ class SurplusController {
     }
 
     public getActiveSpecials: RequestHandler = async (_req: Request, res: Response) => {
-        const serviceResponse: ServiceResponse<DailySpecialResponse[] | null> = await surplusService.getDailySpecials();
+        const serviceResponse: ServiceResponse<SurplusMarkResponse[] | null> = await surplusService.getDailySpecials();
         return handleServiceResponse(serviceResponse, res);
     }
 

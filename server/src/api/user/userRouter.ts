@@ -133,6 +133,17 @@ userRouter.get("/user",authRateLimiter, verifyJWT, userController.getAllUsers);
 
 userRegistry.registerPath({
     method: "get",
+    path: "/api/user/me",
+    summary: "Get current user",
+    tags: ["User"],
+    security: [{ bearerAuth: [] }],
+    responses: createApiResponse(UserResponseSchema, "Current user retrieved successfully", StatusCodes.OK),
+});
+
+userRouter.get("/user/me",authRateLimiter, verifyJWT, userController.getMe);
+
+userRegistry.registerPath({
+    method: "get",
     path: "/api/user/{id}",
     summary: "Get user by ID",
     tags: ["User"],

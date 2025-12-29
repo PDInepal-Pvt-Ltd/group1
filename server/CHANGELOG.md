@@ -6,6 +6,209 @@ All notable changes to this project will be documented in this file.
 
 
 
+## 2025-12-28
+
+
+- Add get current user([6253278](https://github.com/AAYUSKARKI/RestaurantQRify/commits/625327868724e49c4db412378221f8bb10ebb556) )
+
+
+
+## 2025-12-28
+
+
+- Update the surplus response of daily specials to match frontend data([f87be9c](https://github.com/AAYUSKARKI/RestaurantQRify/commits/f87be9ce2b2a6209bd27c50bb2f5f58002fcb428) )
+
+
+
+## 2025-12-28
+
+
+- Add surplusItems in repsonse of menuItems([790c91d](https://github.com/AAYUSKARKI/RestaurantQRify/commits/790c91d6655b7d1d54b3e42ac2dd3b54fb1b6c5e) )
+
+
+
+## 2025-12-28
+
+
+- Add qrcodeurl rows in Table model([92e2aec](https://github.com/AAYUSKARKI/RestaurantQRify/commits/92e2aec621d783e771bca9b6892b7a97cbfa47c0) )
+
+
+
+## 2025-12-28
+
+
+- Add qrCode generation service for table([53ca241](https://github.com/AAYUSKARKI/RestaurantQRify/commits/53ca241d20e6b393b7968883d4f2c69dcafd6d16) )
+
+
+
+## 2025-12-28
+
+
+- Update table module to include qrcode url([cf31e61](https://github.com/AAYUSKARKI/RestaurantQRify/commits/cf31e6138fea83232b870d05c8713ef727017c89) )
+
+
+
+## 2025-12-28
+
+
+- Add qrcode url in seed script([e7d30e4](https://github.com/AAYUSKARKI/RestaurantQRify/commits/e7d30e4ce342e59091fea9e9f55befecdfc3ba19) )
+
+
+
+## 2025-12-28
+
+
+- Update package and  scripts([99f5a50](https://github.com/AAYUSKARKI/RestaurantQRify/commits/99f5a5091a0061663307186f9a11bdc5c6beb29b) )
+
+
+
+## 2025-12-24
+
+
+- Add scripts to tables,menuitems,allergen([1155674](https://github.com/AAYUSKARKI/RestaurantQRify/commits/1155674cec56791483b0883ebd6d906ec16979b1) )
+
+
+
+## 2025-12-24
+
+
+- Changed cors url to integrate with client([03f0d87](https://github.com/AAYUSKARKI/RestaurantQRify/commits/03f0d879e626b2363063578137dfdd913f9f839d) )
+
+
+
+## 2025-12-24
+
+
+- Get daily report for a specific date([32a1db8](https://github.com/AAYUSKARKI/RestaurantQRify/commits/32a1db84d1046f4f0dfa0eebb29d69509a4a911b) )
+
+
+
+## 2025-12-24
+
+
+- Add date-fns package to work with date([22fbc3b](https://github.com/AAYUSKARKI/RestaurantQRify/commits/22fbc3b14b4c6243fa20c010186a0fd6632af157) )
+
+
+
+## 2025-12-24
+
+
+- Add bill payment to mark isPaid true([ea1404e](https://github.com/AAYUSKARKI/RestaurantQRify/commits/ea1404e5d2bfd3e0278df1de8625845a35c0d79e) )
+
+
+
+## 2025-12-23
+
+
+- Add openAPI docs for kdsEvent([f6e5b58](https://github.com/AAYUSKARKI/RestaurantQRify/commits/f6e5b58252ae17da1fc183347688125be5ad7c20) )
+
+
+
+## 2025-12-23
+
+
+- Integrate kds event router into main app([9d2c35a](https://github.com/AAYUSKARKI/RestaurantQRify/commits/9d2c35a7c12be3c4140e8f2001a716359eea2d11) )
+
+
+
+## 2025-12-23
+
+
+- *(kds)* Add KDS event tracking and kitchen queue management([94ecefc](https://github.com/AAYUSKARKI/RestaurantQRify/commits/94ecefcd4e14bc8647d557fb00336a3693c04c2a) )
+
+
+
+## 2025-12-23
+
+
+- Add openAPI docs for audit logs([186824d](https://github.com/AAYUSKARKI/RestaurantQRify/commits/186824d46557df0dc6d78f15a92f3da69a4c0b69) )
+
+
+
+## 2025-12-23
+
+
+- Integrate audit log router into main app([4582331](https://github.com/AAYUSKARKI/RestaurantQRify/commits/45823313f3317967f5635c47e5b145f7d82f6b15) )
+
+
+
+## 2025-12-23
+
+
+- Add get all audit logs, by id , by userId([4a572eb](https://github.com/AAYUSKARKI/RestaurantQRify/commits/4a572eb8108053a58878484c1ee81a0a55df1445) )
+
+
+
+## 2025-12-24
+
+
+- Add get all bills and bill by id([ca016d5](https://github.com/AAYUSKARKI/RestaurantQRify/commits/ca016d525b216dd76186a9732eea3ee04690baf6) )
+
+
+
+## 2025-12-24
+
+
+- Add audit actions for bill paying([e049611](https://github.com/AAYUSKARKI/RestaurantQRify/commits/e0496113dda8cae652b45ec25b22e360f43b5824) )
+
+
+
+## 2025-12-23
+
+
+- Add update and delete order([0758f15](https://github.com/AAYUSKARKI/RestaurantQRify/commits/0758f150384272fa5b0534367083a8cfea2588b4) )
+
+
+
+## 2025-12-23
+
+
+- Add forgot and reset password([b5a2ab1](https://github.com/AAYUSKARKI/RestaurantQRify/commits/b5a2ab179ebea9b49859b6f42c52a64a3404c230) )
+
+
+
+## 2025-12-23
+
+
+- Add email service to send email([f85aba3](https://github.com/AAYUSKARKI/RestaurantQRify/commits/f85aba3e719594d49a840095cfb1643cf58eba25) )
+
+
+
+## 2025-12-23
+
+
+- Install nodemailer for email service([02e6ee0](https://github.com/AAYUSKARKI/RestaurantQRify/commits/02e6ee0bd37baf0650cd59b3b8cf5ca5a25709ab) )
+
+
+
+## 2025-12-23
+
+
+- Add safe .env.sample with placeholders([c94dcda](https://github.com/AAYUSKARKI/RestaurantQRify/commits/c94dcda64c25481765e198d31d330379f84aa201) )
+
+
+
+## 2025-12-23
+
+
+- Add getUserById, update, and delete operations  with openAPI docs([e35dc9a](https://github.com/AAYUSKARKI/RestaurantQRify/commits/e35dc9adf725929ab630bbbd4be0f289be7ffbd4) )
+
+
+
+## 2025-12-23
+
+
+- *(auth)* Add new audit action Update and Delete([b464572](https://github.com/AAYUSKARKI/RestaurantQRify/commits/b46457285c9e2e1c9faf363fa4067d4b06062580) )
+
+
+
+## 2025-12-22
+
+
+- Update changelog([4f8169c](https://github.com/AAYUSKARKI/RestaurantQRify/commits/4f8169ce8eba6fb0543668220ee796e95a1aff0d) )
+
+
+
 ## 2025-12-22
 
 
