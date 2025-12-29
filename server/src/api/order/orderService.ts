@@ -1,5 +1,5 @@
 import { StatusCodes } from "http-status-codes";
-import type { CreateOrder, OrderResponse } from "./orderModel";
+import type { CreateOrder, CreateOrderItem, OrderResponse, UpdateOrder } from "./orderModel";
 import { OrderRepository } from "./orderRepository";
 import { TableRepository } from "../table/tableRepository";
 import { UserRepository } from "../user/userRepository";
@@ -7,7 +7,7 @@ import { MenuItemRepository } from "../menuItem/menuItemRepository";
 import { ServiceResponse } from "@/common/utils/serviceResponse";
 import { AuditLogQueue } from "@/queues/instances/auditlogQueue";
 import logger from "@/common/utils/logger";
-import { Prisma, TableStatus } from "@/generated/prisma/client";
+import { OrderStatus, Prisma, TableStatus } from "@/generated/prisma/client";
 import { BadRequestError } from "@/common/utils/customError";
 import { ORDER_AUDIT_ACTIONS } from "@/common/constants/orderAuditAction";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
@@ -137,6 +137,98 @@ export class OrderService {
         } catch (error) {
             logger.error("Error getting all orders:", error);
             return ServiceResponse.failure("Error getting all orders", null, StatusCodes.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    async updateOrder(orderId: string, data: UpdateOrder, actorId?: string): Promise<ServiceResponse<OrderResponse | null>> {
+    try {
+        const existingOrder = await this.orderRepository.findOrderById(orderId);
+        if (!existingOrder) {
+            return ServiceResponse.failure("Order not found", null, StatusCodes.NOT_FOUND);
+        }
+
+        const terminalStatuses: OrderStatus[] = ['SERVED', 'CANCELLED'];
+        if (terminalStatuses.includes(existingOrder.status)) {
+            return ServiceResponse.failure(`Cannot update an order that is already ${existingOrder.status}`, null, StatusCodes.BAD_REQUEST);
+        }
+
+       let totalAddition = new Prisma.Decimal(0);
+        let processedNewItems: CreateOrderItem[] = [];
+
+       if (data.items && data.items.length > 0) {
+            const menuItems = await this.menuItemRepository.findAvailableByIds(data.items.map(i => i.menuItemId));
+            if (menuItems.length !== data.items.length) {
+                return ServiceResponse.failure("One or more menu items are unavailable", null, StatusCodes.BAD_REQUEST);
+            }
+
+            const itemMap = new Map(menuItems.map(mi => [mi.id, mi]));
+
+            processedNewItems = data.items.map(item => {
+                const menu = itemMap.get(item.menuItemId)!;
+                let unitPrice = menu.price;
+
+                const activeSurplus = menu.surplusMarks?.[0];
+                if (activeSurplus) {
+                    const multiplier = new Prisma.Decimal(1).minus(new Prisma.Decimal(activeSurplus.discountPct).dividedBy(100));
+                    unitPrice = unitPrice.times(multiplier).toDecimalPlaces(2);
+                }
+
+                const discount = new Prisma.Decimal(item.discountAmount || 0);
+                const subTotal = new Prisma.Decimal(item.qty).times(unitPrice).minus(discount);
+
+                if (subTotal.lte(0)) throw new BadRequestError(`Invalid pricing for ${menu.id}`);
+
+                totalAddition = totalAddition.plus(subTotal);
+
+                return {
+                    ...item,
+                    unitPrice,
+                    subTotal,
+                    discountAmount: discount
+                };
+            });
+        }
+
+        const updatedOrder = await this.orderRepository.updateOrder(
+            orderId,
+            data,
+            totalAddition,
+            processedNewItems,
+            actorId
+        );
+
+        await this.auditLogQueue.add("createAuditLog", {
+            userId: actorId,
+            action: ORDER_AUDIT_ACTIONS.UPDATED,
+            resourceType: "Order",
+            resourceId: orderId,
+           payload: { 
+                prevStatus: existingOrder.status, 
+                newStatus: data.status, 
+                itemsAdded: processedNewItems.length 
+            },
+            ip: null,
+            userAgent: null,
+        });
+
+        return ServiceResponse.success("Order updated successfully", updatedOrder, StatusCodes.OK);
+    } catch (error) {
+        logger.error(`Error updating order ${orderId}:`, error);
+        return ServiceResponse.failure("Internal Server Error", null, StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+}
+
+    async deleteOrder(orderId: string): Promise<ServiceResponse<OrderResponse | null>> {
+        try {
+            const order = await this.orderRepository.findOrderById(orderId);
+            if (!order) {
+                return ServiceResponse.failure("Order not found", null, StatusCodes.NOT_FOUND);
+            }
+            const deletedOrder = await this.orderRepository.deleteOrder(orderId);
+            return ServiceResponse.success<OrderResponse>("Order deleted successfully", deletedOrder, StatusCodes.OK);
+        } catch (error) {
+            logger.error("Error deleting order:", error);
+            return ServiceResponse.failure("Error deleting order", null, StatusCodes.INTERNAL_SERVER_ERROR);
         }
     }
 }
