@@ -29,6 +29,7 @@ export const tableSchema = z.object({
     deletedAt: z.date().nullable().openapi({ description: "Timestamp when the table was deleted",example: "2024-01-01T12:00:00Z"}),
     name: z.string().openapi({ description: "Name of the table",example: "Table 1"}),
     seats: z.number().openapi({ description: "Number of seats on the table",example: 4}),
+    qrCodeUrl: z.string().nullable().openapi({ description: "URL of the QR code for the table",example: "https://example.com/qr-code/123e4567-e89b-12d3-a456-426655440000"}),
     status: z.enum(TableStatus).openapi({ description: "Status of the table",example: "AVAILABLE"}),
     assignedTo: z.string().nullable().openapi({ description: "ID of the user assigned to the table",example: "123e4567-e89b-12d3-a456-426655440000"}),
 });
@@ -53,6 +54,7 @@ export const TableResponseSchema = tableSchema.pick({
     seats: true,
     status: true,
     assignedTo: true,
+    qrCodeUrl: true
 });
 
 export const AssignWaiterSchema = z.object({

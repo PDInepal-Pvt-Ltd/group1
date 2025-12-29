@@ -57,7 +57,7 @@ export class SurplusService {
         }
     }
 
-    async getDailySpecials(): Promise<ServiceResponse<DailySpecialResponse[] | null>> {
+    async getDailySpecials(): Promise<ServiceResponse<SurplusMarkResponse[] | null>> {
         try {
             const activeMarks = await this.surplusRepository.findActiveSurplusMark();
 
@@ -65,25 +65,7 @@ export class SurplusService {
                 return ServiceResponse.failure("No active specials found", null, StatusCodes.NOT_FOUND);
             }
 
-            const formattedSpecials = activeMarks.map(mark => {
-                const originalPrice = new Prisma.Decimal(mark.menuItem.price);
-                const discountFactor = new Prisma.Decimal(1).minus(mark.discountPct.div(100));
-                const salePrice = originalPrice.mul(discountFactor).toDecimalPlaces(2);
-
-                return {
-                    id: mark.id,
-                    menuItemId: mark.menuItemId,
-                    name: mark.menuItem.name,
-                    originalPrice,
-                    salePrice,
-                    discountPct: mark.discountPct,
-                    endsAt: mark.surplusUntil,
-                    imageUrl: mark.menuItem.imageUrl,
-                    note: mark.note
-                };
-            });
-
-            return ServiceResponse.success<DailySpecialResponse[]>("Daily specials fetched", formattedSpecials, StatusCodes.OK);
+            return ServiceResponse.success<SurplusMarkResponse[]>("Daily specials fetched", activeMarks, StatusCodes.OK);
         } catch (error) {
             logger.error("Error fetching specials:", error);
             return ServiceResponse.failure("Internal Server Error", null, StatusCodes.INTERNAL_SERVER_ERROR);

@@ -16,6 +16,8 @@ import { menuItemAllergenRouter } from "./api/menuItemAllergen/menuItemAllergenR
 import { orderRouter } from "./api/order/orderRouter";
 import { billRouter } from "./api/bill/billRouter";
 import { surplusRouter } from "./api/surplus/surplusRouter";
+import { auditLogRouter } from "./api/auditlog/auditlogRouter";
+import { kdsEventRouter } from "./api/kds/kdsEventRouter";
 
 const app: Express = express();
 const server = http.createServer(app);
@@ -24,7 +26,7 @@ const server = http.createServer(app);
 app.use(helmet());
 app.use(rateLimiter);
 app.use(cors({
-    origin: "*",
+    origin: "http://localhost:5173",
     credentials: true
 }));
 app.use(express.json());
@@ -42,6 +44,8 @@ app.use("/api", menuItemAllergenRouter);
 app.use("/api", orderRouter);
 app.use("/api", billRouter);
 app.use("/api", surplusRouter);
+app.use("/api", kdsEventRouter);
+app.use("/api", auditLogRouter);
 
 // OpenAPI Documentation
 app.use(openAPIRouter);

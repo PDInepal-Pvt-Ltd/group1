@@ -110,6 +110,7 @@ model Table {
   updatedAt  DateTime   @updatedAt
   deletedAt  DateTime?  // Soft delete
   name       String
+  qrCodeUrl  String?
   seats      Int
   status     TableStatus @default(AVAILABLE)
   assignedTo String?     // FK to User.id (nullable)
