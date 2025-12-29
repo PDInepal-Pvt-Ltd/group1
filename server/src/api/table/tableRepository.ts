@@ -12,6 +12,7 @@ export class TableRepository {
                 seats: true,
                 status: true,
                 assignedTo: true,
+                qrCodeUrl: true
             }
         });
     }
@@ -25,6 +26,7 @@ export class TableRepository {
                 seats: true,
                 status: true,
                 assignedTo: true,
+                qrCodeUrl: true
             }
         });
     }
@@ -38,6 +40,7 @@ export class TableRepository {
                 seats: true,
                 status: true,
                 assignedTo: true,
+                qrCodeUrl: true
             }
         });
     }
@@ -52,6 +55,7 @@ export class TableRepository {
                 seats: true,
                 status: true,
                 assignedTo: true,
+                qrCodeUrl: true
             }
         });
     }
@@ -66,6 +70,7 @@ export class TableRepository {
                 seats: true,
                 status: true,
                 assignedTo: true,
+                qrCodeUrl: true
             }
         });
     }
@@ -80,6 +85,7 @@ export class TableRepository {
                 seats: true,
                 status: true,
                 assignedTo: true,
+                qrCodeUrl: true
             }
         });
     }
@@ -94,6 +100,7 @@ export class TableRepository {
                 seats: true,
                 status: true,
                 assignedTo: true,
+                qrCodeUrl: true
             }
         });
     }
@@ -108,6 +115,7 @@ export class TableRepository {
                 seats: true,
                 status: true,
                 assignedTo: true,
+                qrCodeUrl: true
             }
         });
     }
@@ -130,6 +138,22 @@ export class TableRepository {
                 seats: true,
                 status: true,
                 assignedTo: true,
+                qrCodeUrl: true
+            }
+        });
+    }
+
+    async updateTableQrCode(tableId: string, qrCodeUrl: string): Promise<TableResponse> {
+        return prisma.table.update({
+            where: { id: tableId },
+            data: { qrCodeUrl },
+            select: {
+                id: true,
+                name: true,
+                seats: true,
+                status: true,
+                assignedTo: true,
+                qrCodeUrl: true
             }
         });
     }

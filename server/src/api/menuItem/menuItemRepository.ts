@@ -1,5 +1,6 @@
 import { prisma } from "@/common/lib/prisma";
 import { MenuItemResponse, CreateMenuItem, UpdateMenuItem } from "./menuItemModel";
+import { Prisma } from "@/generated/prisma/client";
 
 export class MenuItemRepository {
     async createMenuItem(data: CreateMenuItem, imageUrl: string): Promise<MenuItemResponse> {
@@ -55,6 +56,16 @@ export class MenuItemRepository {
                 isAvailable: true,
                 isVeg: true,
                 categoryId: true,
+                surplusMarks: {
+                    where: {
+                        surplusAt: { lte: new Date() },
+                        surplusUntil: { gte: new Date() },
+                        deletedAt: null
+                    },
+                    select: {
+                        discountPct: true
+                    }
+                },
                 allergens: {
                     select: {
                         allergen: {
@@ -67,6 +78,33 @@ export class MenuItemRepository {
                 }
             }
         });
+    }
+
+    async findAvailableByIds(menuItemIds: string[]): Promise<Array<{ id: string; price: Prisma.Decimal, surplusMarks: { discountPct: Prisma.Decimal }[] }>> {
+        return prisma.menuItem.findMany({
+            where: {
+                id: {
+                    in: menuItemIds
+                },
+                isAvailable: true,
+                deletedAt: null
+            },
+            select: {
+                id: true,
+                price: true,
+                surplusMarks: {
+                    where: {
+                        deletedAt: null,
+                        surplusAt: { lte: new Date() },
+                        surplusUntil: { gte: new Date() }
+                    },
+                    select: {
+                        discountPct: true
+                    },
+                    take: 1
+                }
+            }
+        })
     }
 
     async findByCategory(categoryId: string): Promise<MenuItemResponse[]> {

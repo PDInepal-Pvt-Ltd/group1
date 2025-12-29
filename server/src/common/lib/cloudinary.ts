@@ -1,5 +1,6 @@
 import fs from "node:fs";
-import { v2 as cloudinary } from "cloudinary";
+import { v2 as cloudinary, UploadApiResponse } from "cloudinary";
+import { Writable } from "node:stream";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -61,4 +62,24 @@ const deleteMediaByurl = async (url: string): Promise<any | null> => {
   }
 };
 
-export { uploadOnCloudinary, uploadMediaurlsOnCloudinary, deleteMediaByurl };
+ const createCloudinaryUploadStream = (
+  options: any
+): { stream: Writable; promise: Promise<UploadApiResponse> } => {
+  let resolve: (val: UploadApiResponse) => void;
+  let reject: (err: any) => void;
+
+  const promise = new Promise<UploadApiResponse>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+
+  const stream = cloudinary.uploader.upload_stream(options, (error, result) => {
+    if (error) return reject(error);
+    if (!result) return reject(new Error("Upload failed"));
+    resolve(result);
+  });
+
+  return { stream, promise };
+};
+
+export { uploadOnCloudinary, uploadMediaurlsOnCloudinary, deleteMediaByurl, createCloudinaryUploadStream };
