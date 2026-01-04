@@ -1,95 +1,89 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom"
+import { cn } from "@/lib/utils"
 import {
   LayoutDashboard,
-  Table,
-  Menu,
-  ShoppingBag,
-  ChefHat,
+  UtensilsCrossed,
+  Users,
+  ShoppingCart,
   Receipt,
   Calendar,
+  ChefHat,
   Settings,
   LogOut,
-} from "lucide-react";
+  Logs,
+  HeartPulseIcon,
+  UserRoundPlus,
+  UserCog
+} from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { useAppDispatch, useAppSelector } from "@/store/hooks"
+import { logoutUser } from "@/store/slices/authSlice"
 
-const menuItems = [
-  { name: "Dashboard", icon: LayoutDashboard, path: "/admin-dashboard" },
-  { name: "Tables", icon: Table, path: "/tables" },
-  { name: "Menu", icon: Menu, path: "/menu" },
-  { name: "POS", icon: ShoppingBag, path: "/pos" },
-  { name: "Kitchen", icon: ChefHat, path: "/kitchen" },
-  { name: "Bills", icon: Receipt, path: "/bills" },
-  { name: "Reservations", icon: Calendar, path: "/reservations" },
-  { name: "Settings", icon: Settings, path: "/settings" },
-];
+const navigation = [
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: ["ADMIN", "CASHIER", "WAITER", "KITCHEN"] },
+  { name: "Tables", href: "/tables", icon: Users, roles: ["ADMIN", "WAITER"] },
+  { name: "Menu", href: "/menu", icon: UtensilsCrossed, roles: ["ADMIN"] },
+  { name: "POS", href: "/pos", icon: ShoppingCart, roles: ["ADMIN", "CASHIER", "WAITER"] },
+  { name: "Kitchen", href: "/kitchen", icon: ChefHat, roles: ["ADMIN", "KITCHEN"] },
+  { name: "Bills", href: "/bills", icon: Receipt, roles: ["ADMIN", "CASHIER"] },
+  { name: "Reservations", href: "/reservations", icon: Calendar, roles: ["ADMIN", "WAITER"] },
+  { name: "Audit Log", href: "/auditlog", icon: Logs, roles: ["ADMIN"] },
+  { name: "Add Staff", href: "/addstaff", icon: UserRoundPlus, roles: ["ADMIN"] },
+  { name: "Manage Staff", href: "/managestaff", icon: UserCog, roles: ["ADMIN"] },
+  { name: "Health", href: "/health", icon: HeartPulseIcon, roles: ["ADMIN"] },
+  { name: "Settings", href: "/settings", icon: Settings, roles: ["ADMIN"] },
+]
 
-export default function Layout({ children }) {
-  const location = useLocation();
+export function Sidebar() {
+  const { user } = useAppSelector((state) => state.auth);
+  const dispatch = useAppDispatch();
+  const { pathname } = useLocation();
 
-  const handleLogout = () => {
-    localStorage.removeItem("accessToken");
-    window.location.href = "/"; // full refresh to login
-  };
+  const filteredNav = navigation.filter((item) => (user ? item.roles.includes(user.role) : false))
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      {/* Sidebar - Same on all pages */}
-      <div className="w-64 bg-gray-900 text-white flex flex-col">
-        {/* Logo */}
-        <div className="p-6 border-b border-gray-800">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
-              <ChefHat className="w-6 h-6 text-white" />
-            </div>
-            <h1 className="text-xl font-bold">RestaurantOS</h1>
-          </div>
-        </div>
-
-        {/* Menu */}
-        <nav className="flex-1 p-4">
-          <ul className="space-y-1">
-            {menuItems.map((item) => (
-              <li
-                key={item.name}
-                className={`rounded-lg transition ${
-                  location.pathname === item.path
-                    ? "bg-gray-800 font-medium"
-                    : "hover:bg-gray-800"
-                }`}
-              >
-                <Link to={item.path} className="flex items-center gap-3 px-4 py-3">
-                  <item.icon className="w-5 h-5" />
-                  <span>{item.name}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-
-        {/* User & Logout */}
-        <div className="p-6 border-t border-gray-800">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold">
-              A
-            </div>
-            <div>
-              <p className="font-medium">Admin User</p>
-              <p className="text-sm text-gray-400">ADMIN</p>
-            </div>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 bg-white text-gray-900 py-2.5 rounded-lg font-medium hover:bg-gray-100 transition"
-          >
-            <LogOut className="w-4 h-4" />
-            Logout
-          </button>
-        </div>
+    <div className="flex h-screen w-64 flex-col bg-sidebar border-r border-sidebar-border">
+      <div className="flex h-16 items-center border-b border-sidebar-border px-6">
+        <ChefHat className="h-8 w-8 text-sidebar-primary" />
+        <span className="ml-2 text-xl font-bold text-sidebar-foreground">RestaurantOS</span>
       </div>
 
-      {/* Page Content */}
-      <div className="flex-1 overflow-auto">
-        {children}
+      <nav className="flex-1 space-y-1 px-3 py-4">
+        {filteredNav.map((item) => {
+          const isActive = pathname === item.href
+          return (
+            <Link
+              key={item.name}
+              to={item.href}
+              className={cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                isActive
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+              )}
+            >
+              <item.icon className="h-5 w-5" />
+              {item.name}
+            </Link>
+          )
+        })}
+      </nav>
+
+      <div className="border-t border-sidebar-border p-4">
+        <div className="mb-3 flex items-center gap-3 px-2">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sidebar-primary text-sidebar-primary-foreground">
+            {user?.name.charAt(0)}
+          </div>
+          <div className="flex-1 overflow-hidden">
+            <p className="text-sm font-medium text-sidebar-foreground truncate">{user?.name}</p>
+            <p className="text-xs text-sidebar-foreground/60">{user?.role}</p>
+          </div>
+        </div>
+        <Button onClick={() => dispatch(logoutUser())} variant="outline" className="w-full justify-start gap-2 bg-transparent" size="sm">
+          <LogOut className="h-4 w-4" />
+          Logout
+        </Button>
       </div>
     </div>
-  );
+  )
 }
