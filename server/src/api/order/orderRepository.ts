@@ -1,9 +1,9 @@
 import { prisma } from "@/common/lib/prisma";
-import { CreateOrder, CreateOrderItem, OrderResponse, UpdateOrder } from "./orderModel";
+import { CalculatedOrderItem, CreateOrder, CreateOrderItem, OrderResponse, UpdateOrder } from "./orderModel";
 import { OrderStatus, Prisma, TableStatus } from "@/generated/prisma/client";
 
 export class OrderRepository {
-    async createOrder(data: CreateOrder, orderSubTotal: Prisma.Decimal, orderItemsData: CreateOrderItem[], actorId?: string): Promise<OrderResponse> {
+    async createOrder(data: CreateOrder, orderSubTotal: Prisma.Decimal, orderItemsData: CalculatedOrderItem[], actorId?: string): Promise<OrderResponse> {
         return prisma.$transaction(async (tx) => {
             const createdOrder = await tx.order.create({
                 data: {
@@ -95,7 +95,7 @@ export class OrderRepository {
     id: string,
     data: UpdateOrder,
     totalAddition: Prisma.Decimal,
-    newItems: CreateOrderItem[],
+    newItems: CalculatedOrderItem[],
     actorId?: string
 ): Promise<OrderResponse> {
     return prisma.$transaction(async (tx) => {

@@ -6,17 +6,23 @@ import { time } from "node:console";
 export class KdsEventRepository {
     async create(data: CreateKdsEvent, actorId: string, minutesSpent?: number): Promise<KdsEventResponse> {
         return prisma.kdsEvent.create({
-            data: { ...data, actorId, minutesSpent, timestamp: new Date() },
-            select: {
-                id: true,
-                createdAt: true,
-                orderId: true,
-                status: true,
-                timestamp: true,
-                minutesSpent: true,
-                actorId: true,
-                notes: true,
-            }
+            data: {
+                ...data,
+                actorId,
+                minutesSpent,
+                timestamp: new Date(),
+            },
+            include: {
+                order: {
+                    include: {
+                        items: {
+                            include: {
+                                menuItem: true,
+                            },
+                        },
+                    },
+                },
+            },
         });
     }
 
