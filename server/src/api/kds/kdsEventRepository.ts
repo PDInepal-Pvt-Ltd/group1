@@ -40,7 +40,7 @@ export class KdsEventRepository {
                 deletedAt: null
             },
             include: {
-                items: true,
+                items: { include: { menuItem: true } },
                 kdsEvents: { orderBy: { timestamp: 'desc' }, take: 1 }
             },
             orderBy: { createdAt: 'asc' }

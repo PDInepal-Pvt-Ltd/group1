@@ -35,14 +35,19 @@ import { MoreHorizontal, Pencil, Trash2, Mail, Shield, Search, Filter } from "lu
 export default function ManageStaff() {
   const dispatch = useDispatch()
   const { loading } = useSelector((state) => state.auth)
-  
+  const Roles = {
+        WAITER: "WAITER",
+        CASHIER: "CASHIER",
+        KITCHEN: "KITCHEN",
+        ADMIN: "ADMIN",
+    }
   const [staff, setStaff] = useState([])
   const [isEditOpen, setIsEditOpen] = useState(false)
-  const [selectedUser, setSelectedUser] = useState<User | null>(null)
+  const [selectedUser, setSelectedUser] = useState(null)
 
   // --- Search & Filter State ---
   const [searchQuery, setSearchQuery] = useState("")
-  const [roleFilter, setRoleFilter] = useState<string>("ALL")
+  const [roleFilter, setRoleFilter] = useState("ALL")
 
   const fetchStaff = async () => {
     try {

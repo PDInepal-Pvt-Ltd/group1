@@ -31,8 +31,15 @@ const userPersistConfig = {
   storage,
 }
 
+const themePersistConfig = {
+  key: 'theme',
+  version: 1,
+  storage,
+}
+
 
 const persistedAuthReducer = persistReducer(userPersistConfig, authReducer);
+const persistedThemeReducer = persistReducer(themePersistConfig, themeReducer);
 
 const rootReducer = combineReducers({
   auth: persistedAuthReducer,
@@ -48,7 +55,7 @@ const rootReducer = combineReducers({
   kds: kdsReducer,
   auditLog: auditLogReducer,
   health: healthReducer,
-  theme: themeReducer
+  theme: persistedThemeReducer
 });
 
 // Configure the store

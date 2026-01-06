@@ -10,6 +10,12 @@ import { registerUser } from "@/store/authSlice"
 import { UserPlus, ShieldCheck } from "lucide-react"
 
 export default function AddStaff() {
+    const Roles = {
+        WAITER: "WAITER",
+        CASHIER: "CASHIER",
+        KITCHEN: "KITCHEN",
+        ADMIN: "ADMIN",
+    }
     const dispatch = useDispatch()
     const { loading } = useSelector((state) => state.auth)
     

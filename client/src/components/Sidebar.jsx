@@ -20,7 +20,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { logoutUser } from "@/store/authSlice"
 
 const navigation = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: ["ADMIN", "CASHIER", "WAITER", "KITCHEN"] },
+  { name: "Dashboard", href: "/admin-dashboard", icon: LayoutDashboard, roles: ["ADMIN", "CASHIER", "WAITER", "KITCHEN"] },
   { name: "Tables", href: "/tables", icon: Users, roles: ["ADMIN", "WAITER"] },
   { name: "Menu", href: "/menu", icon: UtensilsCrossed, roles: ["ADMIN"] },
   { name: "POS", href: "/pos", icon: ShoppingCart, roles: ["ADMIN", "CASHIER", "WAITER"] },

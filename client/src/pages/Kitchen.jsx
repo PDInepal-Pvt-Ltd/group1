@@ -56,8 +56,20 @@ export default function KitchenPage() {
     dispatch(fetchTables());
     dispatch(fetchMenuItems());
     dispatch(fetchKdsPerformance());
+
+    const queueInterval = setInterval(() => {
+      dispatch(fetchKdsQueue());
+    }, 10000); // Refresh queue every 10 seconds
+
+    const performanceInterval = setInterval(() => {
+      dispatch(fetchKdsPerformance());
+    }, 30000); // Refresh performance every 30 seconds
+
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+
     return () => {
+      clearInterval(queueInterval);
+      clearInterval(performanceInterval);
       clearInterval(timer);
       dispatch(clearKdsTimeline());
     };
@@ -112,7 +124,10 @@ export default function KitchenPage() {
           notes,
           minutesSpent: minutesSpent > 0 ? minutesSpent : null,
         })
-      );
+      ).then(() => {
+        dispatch(fetchKdsQueue());
+        dispatch(fetchKdsPerformance());
+      });
       setModalOpen(false);
       setSelectedOrder(null);
     }
@@ -132,137 +147,139 @@ export default function KitchenPage() {
   let longestPrepTime = 0;
   let efficiencyByActor = [];
 
-  if (performance && performance.length > 0) {
-    performance.forEach((stat) => {
-      const avg = stat._avg.minutesSpent || 0;
-      const count = stat._count.id || 0;
-      const max = stat._max.minutesSpent || 0;
-
-      totalCompleted += count;
-      averagePrepTime += avg * count;
-      if (max > longestPrepTime) longestPrepTime = max;
-
-      efficiencyByActor.push({
-        actorId: stat.actorId,
-        avgMinutes: avg.toFixed(2),
-        count,
-      });
-    });
-
-    if (totalCompleted > 0) {
-      averagePrepTime = (averagePrepTime / totalCompleted).toFixed(2);
-    } else {
-      averagePrepTime = 0;
-    }
+  if (performance) {
+    averagePrepTime = performance.averagePrepTime || 0;
+    totalCompleted = performance.totalCompleted || 0;
+    longestPrepTime = performance.longestPrepTime || 0;
+    efficiencyByActor = performance.efficiencyByActor || [];
   }
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gray-100">
-        <div className="text-xl font-semibold text-gray-600">Loading Kitchen Queue...</div>
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="text-xl font-semibold text-foreground">Loading Kitchen Queue...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gray-100">
-        <div className="text-xl font-semibold text-red-600">Error: {error}</div>
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="text-xl font-semibold text-destructive">Error: {error}</div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gradient-to-br from-background to-muted/50">
       {/* Sidebar */}
       <Sidebar />
       {/* Main Content */}
       <div className="flex-1 overflow-auto p-8">
-        <div className="mb-8 flex items-center justify-between">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-8 flex items-center justify-between"
+        >
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-              <ChefHat className="w-8 h-8" />
+            <h1 className="text-4xl font-extrabold text-foreground flex items-center gap-3 tracking-tight">
+              <ChefHat className="w-10 h-10 text-primary" />
               Kitchen Display System
             </h1>
-            <p className="text-gray-600 mt-1">{currentTime.toLocaleTimeString()}</p>
+            <p className="text-lg text-muted-foreground mt-2 italic">{currentTime.toLocaleTimeString()}</p>
           </div>
-          <div className="flex gap-8">
+          <div className="flex gap-12">
             <div className="text-center">
-              <p className="text-3xl font-bold text-gray-900">{activeOrders.length}</p>
-              <p className="text-sm text-gray-600">Active Orders</p>
+              <p className="text-4xl font-bold text-foreground">{activeOrders.length}</p>
+              <p className="text-base text-muted-foreground font-medium">Active Orders</p>
             </div>
             <div className="text-center">
-              <p className="text-3xl font-bold text-orange-600">{pendingOrders.length}</p>
-              <p className="text-sm text-gray-600">Pending</p>
+              <p className="text-4xl font-bold text-primary">{pendingOrders.length}</p>
+              <p className="text-base text-muted-foreground font-medium">Pending</p>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Performance Section */}
         {performance && (
-          <div className="mb-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3 mb-4">
-              <BarChart2 className="w-6 h-6" />
-              KDS Performance
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="mb-8 bg-card rounded-2xl shadow-md border border-border/50 p-8 backdrop-blur-sm"
+          >
+            <h2 className="text-3xl font-bold text-foreground flex items-center gap-3 mb-6">
+              <BarChart2 className="w-8 h-8 text-primary" />
+              Performance Insights
             </h2>
 
-            <div className="grid gap-4 md:grid-cols-3">
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-600">Average Prep Time</p>
-                <p className="text-xl font-bold">
+            <div className="grid gap-6 md:grid-cols-3">
+              <motion.div whileHover={{ scale: 1.05 }} className="p-6 bg-muted/50 rounded-2xl shadow-inner">
+                <p className="text-base text-muted-foreground font-medium">Average Prep Time</p>
+                <p className="text-3xl font-bold text-foreground flex items-center gap-2">
+                  <Clock className="w-6 h-6 text-primary" />
                   {averagePrepTime} mins
                 </p>
-              </div>
+              </motion.div>
 
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-600">Total Orders Completed</p>
-                <p className="text-xl font-bold">
+              <motion.div whileHover={{ scale: 1.05 }} className="p-6 bg-muted/50 rounded-2xl shadow-inner">
+                <p className="text-base text-muted-foreground font-medium">Total Orders Completed</p>
+                <p className="text-3xl font-bold text-foreground flex items-center gap-2">
+                  <CheckCircle2 className="w-6 h-6 text-primary" />
                   {totalCompleted}
                 </p>
-              </div>
+              </motion.div>
 
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-600">Longest Prep Time</p>
-                <p className="text-xl font-bold">
+              <motion.div whileHover={{ scale: 1.05 }} className="p-6 bg-muted/50 rounded-2xl shadow-inner">
+                <p className="text-base text-muted-foreground font-medium">Longest Prep Time</p>
+                <p className="text-3xl font-bold text-foreground flex items-center gap-2">
+                  <AlertTriangle className="w-6 h-6 text-primary" />
                   {longestPrepTime || "—"} mins
                 </p>
-              </div>
+              </motion.div>
             </div>
 
             {/* Per-Actor Stats */}
             {efficiencyByActor.length > 0 && (
-              <div className="mt-6">
-                <h3 className="font-semibold mb-3">Efficiency by Actor</h3>
-                <div className="grid gap-3 md:grid-cols-2">
-                  {efficiencyByActor.map((actor) => (
-                    <div key={actor.actorId} className="p-3 bg-gray-50 rounded-lg">
-                      <p className="font-medium">Actor: {actor.actorId}</p>
-                      <p className="text-sm text-gray-600">
-                        Avg Minutes: {actor.avgMinutes}
+              <div className="mt-8">
+                <h3 className="font-semibold text-2xl mb-4 text-foreground">Team Efficiency</h3>
+                <div className="grid gap-4 md:grid-cols-2">
+                  {efficiencyByActor.map((actor, index) => (
+                    <motion.div
+                      key={actor.actorId}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.1 }}
+                      className="p-4 bg-muted/50 rounded-2xl shadow-inner"
+                    >
+                      <p className="font-medium text-lg text-foreground">Actor: {actor.actorId}</p>
+                      <p className="text-base text-muted-foreground">
+                        Avg Time: {actor.avgMinutes} mins
                       </p>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-base text-muted-foreground">
                         Orders: {actor.count}
                       </p>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               </div>
             )}
-          </div>
+          </motion.div>
         )}
 
-        <div className="space-y-8">
+        <div className="space-y-12">
           {/* Pending Orders */}
           {pendingOrders.length > 0 && (
             <div>
-              <div className="flex items-center gap-2 mb-4">
-                <span className="px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">
+              <div className="flex items-center gap-3 mb-6">
+                <span className="px-6 py-3 bg-muted text-muted-foreground rounded-full text-base font-semibold">
                   PENDING
                 </span>
-                <span className="text-sm text-gray-600">{pendingOrders.length} orders</span>
+                <span className="text-base text-muted-foreground font-medium">{pendingOrders.length} orders</span>
               </div>
               <AnimatePresence>
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {pendingOrders.map((order) => {
                     const table = tables.find((t) => t.id === order.tableId);
                     const timeElapsed = getTimeElapsed(order.createdAt);
@@ -270,73 +287,86 @@ export default function KitchenPage() {
                     return (
                       <motion.div
                         key={order.id}
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 50 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.3 }}
+                        exit={{ opacity: 0, y: -50 }}
+                        transition={{ duration: 0.5 }}
+                        whileHover={{ scale: 1.03, boxShadow: "0 10px 20px rgba(0,0,0,0.1)" }}
                       >
                         <div
-                          className={`bg-white rounded-xl shadow-sm border-2 ${
-                            isUrgent ? "border-red-500" : "border-gray-200"
-                          } p-6`}
+                          className={`bg-card rounded-2xl shadow-lg border-2 ${
+                            isUrgent ? "border-destructive animate-pulse" : "border-border/50"
+                          } p-6 backdrop-blur-sm`}
                         >
-                          <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 font-bold text-lg">
+                          <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center gap-4">
+                              <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold text-xl">
                                 {table ? table.name.split(" ")[1] : "?"}
                               </div>
                               <div>
-                                <p className="font-bold text-gray-900">{table?.name || "Unknown Table"}</p>
-                                <p className="text-sm text-gray-600">{order.placedBy || (order.isQrOrder ? "QR Order" : "Unknown")}</p>
+                                <p className="font-bold text-xl text-foreground">{table?.name || "Unknown Table"}</p>
+                                <p className="text-base text-muted-foreground">{order.placedBy || (order.isQrOrder ? "QR Order" : "Unknown")}</p>
                               </div>
                             </div>
                             <div className="text-right">
-                              <div className={`flex items-center gap-1 ${isUrgent ? "text-red-600" : "text-gray-600"}`}>
-                                <Clock className="w-4 h-4" />
-                                <span className="font-semibold">{timeElapsed}m</span>
+                              <div className={`flex items-center gap-2 ${isUrgent ? "text-destructive" : "text-muted-foreground"} text-base font-semibold`}>
+                                <Clock className="w-5 h-5" />
+                                {timeElapsed} mins
                               </div>
                               {isUrgent && (
-                                <span className="mt-2 px-3 py-1 bg-red-100 text-red-700 text-xs font-medium rounded-full flex items-center gap-1">
-                                  <AlertTriangle className="w-3 h-3" />
-                                  Urgent
+                                <span className="mt-2 inline-flex px-4 py-1 bg-destructive/10 text-destructive text-sm font-medium rounded-full items-center gap-2 dark:bg-destructive/20">
+                                  <AlertTriangle className="w-4 h-4" />
+                                  Urgent Priority
                                 </span>
                               )}
                             </div>
                           </div>
                           {order.notes && (
-                            <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                              <p className="text-sm font-medium text-gray-700">Note: {order.notes}</p>
+                            <div className="mb-6 p-4 bg-muted/50 rounded-xl">
+                              <p className="text-base font-medium text-muted-foreground">Special Note: {order.notes}</p>
                             </div>
                           )}
-                          <div className="space-y-2 mb-4">
+                          <div className="space-y-4 mb-6">
                             {order.items.map((item) => {
                               const menuItem = items.find((m) => m.id === item.menuItemId);
+                              const imageUrl = menuItem?.imageUrl?.replace(/<|>/g, '') || '';
                               return (
-                                <div key={item.menuItemId} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                  <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center font-bold text-sm">
-                                      {item.qty}
+                                <div key={item.id} className="flex items-center gap-4 p-4 bg-muted/50 rounded-xl">
+                                  {imageUrl && (
+                                    <img
+                                      src={imageUrl}
+                                      alt={menuItem?.name}
+                                      className="w-12 h-12 rounded-lg object-cover shadow-sm"
+                                    />
+                                  )}
+                                  <div className="flex-1 flex items-center justify-between">
+                                    <p className="font-medium text-lg text-foreground">{menuItem?.name || "Unknown Item"}</p>
+                                    <div className="w-10 h-10 bg-primary/20 text-primary rounded-full flex items-center justify-center font-bold text-base">
+                                      x{item.qty}
                                     </div>
-                                    <p className="font-medium text-gray-900">{menuItem?.name || "Unknown Item"}</p>
                                   </div>
                                 </div>
                               );
                             })}
                           </div>
-                          <div className="flex gap-2">
-                            <button
+                          <div className="flex gap-3">
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
                               onClick={() => openStatusChangeModal(order, "PREPARING")}
-                              className="flex-1 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700"
+                              className="flex-1 py-3 bg-primary text-primary-foreground rounded-xl font-semibold text-base hover:bg-primary/90 transition-colors"
                             >
-                              Start Preparing
-                            </button>
-                            <button
+                              Start Preparation
+                            </motion.button>
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
                               onClick={() => viewTimeline(order.id)}
-                              className="py-2 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700 flex items-center justify-center gap-2 px-4"
+                              className="py-3 bg-secondary text-secondary-foreground rounded-xl font-semibold text-base hover:bg-secondary/90 transition-colors flex items-center justify-center gap-2 px-6"
                             >
-                              <Eye className="w-4 h-4" />
-                              Timeline
-                            </button>
+                              <Eye className="w-5 h-5" />
+                              View Timeline
+                            </motion.button>
                           </div>
                         </div>
                       </motion.div>
@@ -349,14 +379,14 @@ export default function KitchenPage() {
           {/* Preparing Orders */}
           {preparingOrders.length > 0 && (
             <div>
-              <div className="flex items-center gap-2 mb-4">
-                <span className="px-4 py-2 bg-orange-100 text-orange-700 rounded-full text-sm font-medium">
+              <div className="flex items-center gap-3 mb-6">
+                <span className="px-6 py-3 bg-amber-100 text-amber-700 rounded-full text-base font-semibold dark:bg-amber-900/50 dark:text-amber-300">
                   PREPARING
                 </span>
-                <span className="text-sm text-gray-600">{preparingOrders.length} orders</span>
+                <span className="text-base text-muted-foreground font-medium">{preparingOrders.length} orders</span>
               </div>
               <AnimatePresence>
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {preparingOrders.map((order) => {
                     const table = tables.find((t) => t.id === order.tableId);
                     const timeElapsed = getTimeElapsed(order.createdAt);
@@ -364,79 +394,95 @@ export default function KitchenPage() {
                     return (
                       <motion.div
                         key={order.id}
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 50 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.3 }}
+                        exit={{ opacity: 0, y: -50 }}
+                        transition={{ duration: 0.5 }}
+                        whileHover={{ scale: 1.03, boxShadow: "0 10px 20px rgba(0,0,0,0.1)" }}
                       >
                         <div
-                          className={`bg-white rounded-xl shadow-sm border-2 ${
-                            isUrgent ? "border-red-500" : "border-gray-200"
-                          } p-6`}
+                          className={`bg-card rounded-2xl shadow-lg border-2 ${
+                            isUrgent ? "border-destructive animate-pulse" : "border-border/50"
+                          } p-6 backdrop-blur-sm`}
                         >
-                          <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 font-bold text-lg">
+                          <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center gap-4">
+                              <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold text-xl">
                                 {table ? table.name.split(" ")[1] : "?"}
                               </div>
                               <div>
-                                <p className="font-bold text-gray-900">{table?.name || "Unknown Table"}</p>
-                                <p className="text-sm text-gray-600">{order.placedBy || (order.isQrOrder ? "QR Order" : "Unknown")}</p>
+                                <p className="font-bold text-xl text-foreground">{table?.name || "Unknown Table"}</p>
+                                <p className="text-base text-muted-foreground">{order.placedBy || (order.isQrOrder ? "QR Order" : "Unknown")}</p>
                               </div>
                             </div>
                             <div className="text-right">
-                              <div className={`flex items-center gap-1 ${isUrgent ? "text-red-600" : "text-gray-600"}`}>
-                                <Clock className="w-4 h-4" />
-                                <span className="font-semibold">{timeElapsed}m</span>
+                              <div className={`flex items-center gap-2 ${isUrgent ? "text-destructive" : "text-muted-foreground"} text-base font-semibold`}>
+                                <Clock className="w-5 h-5" />
+                                {timeElapsed} mins
                               </div>
                               {isUrgent && (
-                                <span className="mt-2 px-3 py-1 bg-red-100 text-red-700 text-xs font-medium rounded-full flex items-center gap-1">
-                                  <AlertTriangle className="w-3 h-3" />
-                                  Urgent
+                                <span className="mt-2 inline-flex px-4 py-1 bg-destructive/10 text-destructive text-sm font-medium rounded-full items-center gap-2 dark:bg-destructive/20">
+                                  <AlertTriangle className="w-4 h-4" />
+                                  Urgent Priority
                                 </span>
                               )}
                             </div>
                           </div>
                           {order.notes && (
-                            <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                              <p className="text-sm font-medium text-gray-700">Note: {order.notes}</p>
+                            <div className="mb-6 p-4 bg-muted/50 rounded-xl">
+                              <p className="text-base font-medium text-muted-foreground">Special Note: {order.notes}</p>
                             </div>
                           )}
-                          <div className="space-y-2 mb-4">
-                            {order.items.map((item) => (
-                              <div key={item.menuItemId} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center font-bold text-sm">
-                                    {item.qty}
+                          <div className="space-y-4 mb-6">
+                            {order.items.map((item) => {
+                              const menuItem = items.find((m) => m.id === item.menuItemId);
+                              const imageUrl = menuItem?.imageUrl?.replace(/<|>/g, '') || '';
+                              return (
+                                <div key={item.id} className="flex items-center gap-4 p-4 bg-muted/50 rounded-xl">
+                                  {imageUrl && (
+                                    <img
+                                      src={imageUrl}
+                                      alt={menuItem?.name}
+                                      className="w-12 h-12 rounded-lg object-cover shadow-sm"
+                                    />
+                                  )}
+                                  <div className="flex-1 flex items-center justify-between">
+                                    <p className="font-medium text-lg text-foreground">{menuItem?.name || "Unknown Item"}</p>
+                                    <div className="w-10 h-10 bg-primary/20 text-primary rounded-full flex items-center justify-center font-bold text-base">
+                                      x{item.qty}
+                                    </div>
                                   </div>
-                                  <p className="font-medium text-gray-900">
-                                    {items.find((m) => m.id === item.menuItemId)?.name || "Unknown"}
-                                  </p>
                                 </div>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
-                          <div className="flex gap-2">
-                            <button
+                          <div className="flex gap-3">
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
                               onClick={() => openStatusChangeModal(order, "READY")}
-                              className="flex-1 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 flex items-center justify-center gap-2"
+                              className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-semibold text-base hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2 dark:bg-emerald-500 dark:hover:bg-emerald-600"
                             >
-                              <CheckCircle2 className="w-4 h-4" />
-                              Mark Ready
-                            </button>
-                            <button
+                              <CheckCircle2 className="w-5 h-5" />
+                              Mark as Ready
+                            </motion.button>
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
                               onClick={() => openStatusChangeModal(order, "CANCELLED")}
-                              className="flex-1 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700"
+                              className="py-3 bg-destructive text-destructive-foreground rounded-xl font-semibold text-base hover:bg-destructive/90 transition-colors px-6"
                             >
-                              Cancel
-                            </button>
-                            <button
+                              Cancel Order
+                            </motion.button>
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
                               onClick={() => viewTimeline(order.id)}
-                              className="py-2 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700 flex items-center justify-center gap-2 px-4"
+                              className="py-3 bg-secondary text-secondary-foreground rounded-xl font-semibold text-base hover:bg-secondary/90 transition-colors flex items-center justify-center gap-2 px-6"
                             >
-                              <Eye className="w-4 h-4" />
-                              Timeline
-                            </button>
+                              <Eye className="w-5 h-5" />
+                              View Timeline
+                            </motion.button>
                           </div>
                         </div>
                       </motion.div>
@@ -449,14 +495,14 @@ export default function KitchenPage() {
           {/* Ready Orders */}
           {readyOrders.length > 0 && (
             <div>
-              <div className="flex items-center gap-2 mb-4">
-                <span className="px-4 py-2 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+              <div className="flex items-center gap-3 mb-6">
+                <span className="px-6 py-3 bg-emerald-100 text-emerald-700 rounded-full text-base font-semibold dark:bg-emerald-900/50 dark:text-emerald-300">
                   READY
                 </span>
-                <span className="text-sm text-gray-600">{readyOrders.length} orders</span>
+                <span className="text-base text-muted-foreground font-medium">{readyOrders.length} orders</span>
               </div>
               <AnimatePresence>
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {readyOrders.map((order) => {
                     const table = tables.find((t) => t.id === order.tableId);
                     const timeElapsed = getTimeElapsed(order.createdAt);
@@ -464,72 +510,86 @@ export default function KitchenPage() {
                     return (
                       <motion.div
                         key={order.id}
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 50 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.3 }}
+                        exit={{ opacity: 0, y: -50 }}
+                        transition={{ duration: 0.5 }}
+                        whileHover={{ scale: 1.03, boxShadow: "0 10px 20px rgba(0,0,0,0.1)" }}
                       >
                         <div
-                          className={`bg-white rounded-xl shadow-sm border-2 ${
-                            isUrgent ? "border-red-500" : "border-gray-200"
-                          } p-6`}
+                          className={`bg-card rounded-2xl shadow-lg border-2 ${
+                            isUrgent ? "border-destructive animate-pulse" : "border-border/50"
+                          } p-6 backdrop-blur-sm`}
                         >
-                          <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 font-bold text-lg">
+                          <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center gap-4">
+                              <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold text-xl">
                                 {table ? table.name.split(" ")[1] : "?"}
                               </div>
                               <div>
-                                <p className="font-bold text-gray-900">{table?.name || "Unknown Table"}</p>
-                                <p className="text-sm text-gray-600">{order.placedBy || (order.isQrOrder ? "QR Order" : "Unknown")}</p>
+                                <p className="font-bold text-xl text-foreground">{table?.name || "Unknown Table"}</p>
+                                <p className="text-base text-muted-foreground">{order.placedBy || (order.isQrOrder ? "QR Order" : "Unknown")}</p>
                               </div>
                             </div>
                             <div className="text-right">
-                              <div className={`flex items-center gap-1 ${isUrgent ? "text-red-600" : "text-gray-600"}`}>
-                                <Clock className="w-4 h-4" />
-                                <span className="font-semibold">{timeElapsed}m</span>
+                              <div className={`flex items-center gap-2 ${isUrgent ? "text-destructive" : "text-muted-foreground"} text-base font-semibold`}>
+                                <Clock className="w-5 h-5" />
+                                {timeElapsed} mins
                               </div>
                               {isUrgent && (
-                                <span className="mt-2 px-3 py-1 bg-red-100 text-red-700 text-xs font-medium rounded-full flex items-center gap-1">
-                                  <AlertTriangle className="w-3 h-3" />
-                                  Urgent
+                                <span className="mt-2 inline-flex px-4 py-1 bg-destructive/10 text-destructive text-sm font-medium rounded-full items-center gap-2 dark:bg-destructive/20">
+                                  <AlertTriangle className="w-4 h-4" />
+                                  Urgent Priority
                                 </span>
                               )}
                             </div>
                           </div>
                           {order.notes && (
-                            <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                              <p className="text-sm font-medium text-gray-700">Note: {order.notes}</p>
+                            <div className="mb-6 p-4 bg-muted/50 rounded-xl">
+                              <p className="text-base font-medium text-muted-foreground">Special Note: {order.notes}</p>
                             </div>
                           )}
-                          <div className="space-y-2 mb-4">
-                            {order.items.map((item) => (
-                              <div key={item.menuItemId} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center font-bold text-sm">
-                                    {item.qty}
+                          <div className="space-y-4 mb-6">
+                            {order.items.map((item) => {
+                              const menuItem = items.find((m) => m.id === item.menuItemId);
+                              const imageUrl = menuItem?.imageUrl?.replace(/<|>/g, '') || '';
+                              return (
+                                <div key={item.id} className="flex items-center gap-4 p-4 bg-muted/50 rounded-xl">
+                                  {imageUrl && (
+                                    <img
+                                      src={imageUrl}
+                                      alt={menuItem?.name}
+                                      className="w-12 h-12 rounded-lg object-cover shadow-sm"
+                                    />
+                                  )}
+                                  <div className="flex-1 flex items-center justify-between">
+                                    <p className="font-medium text-lg text-foreground">{menuItem?.name || "Unknown Item"}</p>
+                                    <div className="w-10 h-10 bg-primary/20 text-primary rounded-full flex items-center justify-center font-bold text-base">
+                                      x{item.qty}
+                                    </div>
                                   </div>
-                                  <p className="font-medium text-gray-900">
-                                    {items.find((m) => m.id === item.menuItemId)?.name || "Unknown"}
-                                  </p>
                                 </div>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
-                          <div className="flex gap-2">
-                            <button
+                          <div className="flex gap-3">
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
                               onClick={() => openStatusChangeModal(order, "SERVED")}
-                              className="flex-1 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700"
+                              className="flex-1 py-3 bg-primary text-primary-foreground rounded-xl font-semibold text-base hover:bg-primary/90 transition-colors"
                             >
-                              Mark Served
-                            </button>
-                            <button
+                              Mark as Served
+                            </motion.button>
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
                               onClick={() => viewTimeline(order.id)}
-                              className="py-2 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700 flex items-center justify-center gap-2 px-4"
+                              className="py-3 bg-secondary text-secondary-foreground rounded-xl font-semibold text-base hover:bg-secondary/90 transition-colors flex items-center justify-center gap-2 px-6"
                             >
-                              <Eye className="w-4 h-4" />
-                              Timeline
-                            </button>
+                              <Eye className="w-5 h-5" />
+                              View Timeline
+                            </motion.button>
                           </div>
                         </div>
                       </motion.div>
@@ -541,71 +601,120 @@ export default function KitchenPage() {
           )}
           {/* No Active Orders */}
           {activeOrders.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl shadow-sm border border-gray-200">
-              <ChefHat className="w-20 h-20 text-gray-400 mb-4" />
-              <p className="text-2xl font-semibold text-gray-900 mb-2">No active orders</p>
-              <p className="text-gray-600">New orders will appear here</p>
-            </div>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex flex-col items-center justify-center py-32 bg-card rounded-2xl shadow-md border border-border/50"
+            >
+              <ChefHat className="w-24 h-24 text-primary mb-6" />
+              <p className="text-3xl font-semibold text-foreground mb-3">Kitchen is Quiet</p>
+              <p className="text-lg text-muted-foreground italic">Awaiting new culinary adventures...</p>
+            </motion.div>
           )}
         </div>
 
         {/* Status Change Modal */}
-        {modalOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-xl p-6 w-96">
-              <h3 className="text-xl font-bold mb-4">Change Status to {targetStatus}</h3>
-              <textarea
-                className="w-full p-2 border border-gray-300 rounded-lg mb-4"
-                placeholder="Add notes (optional)"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-              />
-              <div className="flex gap-2">
-                <button
-                  onClick={handleStatusTransition}
-                  className="flex-1 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700"
-                >
-                  Confirm
-                </button>
-                <button
-                  onClick={() => setModalOpen(false)}
-                  className="flex-1 py-2 bg-gray-300 text-gray-900 rounded-lg font-medium hover:bg-gray-400"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <AnimatePresence>
+          {modalOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 backdrop-blur-sm"
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="bg-card rounded-2xl p-8 w-96 shadow-2xl border border-border/50"
+              >
+                <h3 className="text-2xl font-bold mb-6 text-foreground">Update Status to {targetStatus}</h3>
+                <textarea
+                  className="w-full p-4 border border-border rounded-xl mb-6 bg-background text-foreground resize-none h-32 focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="Add optional notes for the team..."
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                />
+                <div className="flex gap-3">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleStatusTransition}
+                    className="flex-1 py-3 bg-primary text-primary-foreground rounded-xl font-semibold text-base hover:bg-primary/90 transition-colors"
+                  >
+                    Confirm Update
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setModalOpen(false)}
+                    className="flex-1 py-3 bg-secondary text-secondary-foreground rounded-xl font-semibold text-base hover:bg-secondary/90 transition-colors"
+                  >
+                    Cancel
+                  </motion.button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Timeline Modal */}
-        {selectedOrderId && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-xl p-6 w-96 max-h-96 overflow-auto">
-              <h3 className="text-xl font-bold mb-4">Order Timeline</h3>
-              {orderTimeline.length > 0 ? (
-                <ul className="space-y-2">
-                  {orderTimeline.map((event) => (
-                    <li key={event.id} className="p-2 bg-gray-50 rounded-lg">
-                      <p className="font-medium">{event.status} at {new Date(event.timestamp).toLocaleString()}</p>
-                      {event.minutesSpent && <p className="text-sm text-gray-600">Minutes Spent: {event.minutesSpent}</p>}
-                      {event.notes && <p className="text-sm text-gray-600">Notes: {event.notes}</p>}
-                      <p className="text-sm text-gray-600">By Actor: {event.actorId}</p>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p>No timeline events found.</p>
-              )}
-              <button
-                onClick={closeTimeline}
-                className="mt-4 w-full py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700"
+        <AnimatePresence>
+          {selectedOrderId && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 backdrop-blur-sm"
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="bg-card rounded-2xl p-8 w-96 max-h-[70vh] overflow-auto shadow-2xl border border-border/50"
               >
-                Close
-              </button>
-            </div>
-          </div>
-        )}
+                <h3 className="text-2xl font-bold mb-6 text-foreground">Order Journey</h3>
+                {orderTimeline.length > 0 ? (
+                  <div className="relative space-y-6 before:absolute before:left-4 before:top-0 before:bottom-0 before:w-0.5 before:bg-border">
+                    {orderTimeline.map((event, index) => (
+                      <motion.div
+                        key={event.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.3, delay: index * 0.1 }}
+                        className="relative pl-12"
+                      >
+                        <div className="absolute left-0 top-2 w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
+                          <div className="w-3 h-3 bg-primary rounded-full"></div>
+                        </div>
+                        <div className="p-4 bg-muted/50 rounded-xl">
+                          <p className="font-medium text-lg text-foreground">
+                            {event.status} · {new Date(event.timestamp).toLocaleString()}
+                          </p>
+                          {event.minutesSpent && <p className="text-base text-muted-foreground">Time Spent: {event.minutesSpent} mins</p>}
+                          {event.notes && <p className="text-base text-muted-foreground italic">Notes: {event.notes}</p>}
+                          <p className="text-base text-muted-foreground">Handled by: {event.actorId}</p>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-lg text-foreground italic">No journey events recorded yet.</p>
+                )}
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={closeTimeline}
+                  className="mt-8 w-full py-3 bg-primary text-primary-foreground rounded-xl font-semibold text-base hover:bg-primary/90 transition-colors"
+                >
+                  Close Journey
+                </motion.button>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
