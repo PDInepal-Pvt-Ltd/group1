@@ -1,352 +1,319 @@
-import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
-import {
-  LayoutDashboard,
-  Table as TableIcon,
-  Menu as MenuIcon,
-  ShoppingBag,
-  ChefHat,
-  Receipt,
-  Calendar,
-  Settings,
-  LogOut,
-  Search,
-  Plus,
-  Minus,
-  Trash2,
-  Leaf,
-  ShoppingCart,
-  Send,
-} from "lucide-react";
-import API from "../api/axios"; // ← Your configured API with token
+"use client"
+
+import React, { useState } from "react"
+import { Sidebar } from "@/components/Sidebar"
+import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Plus, Minus, ShoppingCart, Trash2, Leaf, Search, Tag, Send } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { fetchMenuItems } from "@/store/menuItemSlice"
+import { useDispatch, useSelector } from "react-redux"
+import { fetchDailySpecials } from "@/store/surplusSlice"
+import { fetchTables } from "@/store/tableSlice"
+import { fetchCategories } from "@/store/categorySlice"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import toast from "react-hot-toast"
 
 export default function POSPage() {
-  const location = useLocation();
+  const dispatch = useDispatch();
+  const [selectedTable, setSelectedTable] = useState("")
+  const [cart, setCart] = useState([])
+  const [searchQuery, setSearchQuery] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState("all")
 
-  const [selectedTable, setSelectedTable] = useState("");
-  const [cart, setCart] = useState([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [tables, setTables] = useState([]);
-  const [menuItems, setMenuItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const menuItems = useSelector((state) => state.menuItem.items)
+  const dailySpecials = useSelector((state) => state.surplus.dailySpecials)
+  const tables = useSelector((state) => state.table.tables)
+  const categories = useSelector((state) => state.category.categories)
 
-  // Fetch real data from backend
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
+  React.useEffect(() => {
+    dispatch(fetchMenuItems())
+    dispatch(fetchDailySpecials())
+    dispatch(fetchTables())
+    dispatch(fetchCategories())
 
-        const [tablesRes, menuRes] = await Promise.all([
-          API.get("/api/table"),
-          API.get("/api/menu-item"),
-        ]);
-
-        const tablesData = tablesRes.data?.data || tablesRes.data || [];
-        const menuData = menuRes.data?.data || menuRes.data || [];
-
-        setTables(Array.isArray(tablesData) ? tablesData : []);
-        setMenuItems(Array.isArray(menuData) ? menuData : []);
-      } catch (err) {
-        console.error("Error loading POS data:", err);
-        alert("Failed to load tables or menu items");
-      } finally {
-        setLoading(false);
+    const interval = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        dispatch(fetchMenuItems())
+        dispatch(fetchDailySpecials())
+        dispatch(fetchTables())
+        dispatch(fetchCategories())
       }
-    };
+    }, 30000);
 
-    fetchData();
-  }, []);
+    return () => clearInterval(interval);
+  }, [dispatch]);
 
-  const addToCart = (item) => {
-    const existing = cart.find((c) => c.id === item.id);
-    if (existing) {
-      setCart(cart.map((c) => (c.id === item.id ? { ...c, qty: c.qty + 1 } : c)));
+  const addToCart = (item = menuItems[0]) => {
+    const existingItem = cart.find((c) => c.menuItemId === item.id)
+    if (existingItem) {
+      setCart(cart.map((c) => (c.menuItemId === item.id ? { ...c, qty: c.qty + 1 } : c)))
+      toast.success(`${item.name} x${existingItem.qty + 1} added to cart`)
     } else {
-      setCart([...cart, { ...item, qty: 1 }]);
+      setCart([
+        ...cart,
+        {
+          menuItemId: item.id,
+          name: item.name,
+          price: item.price,
+          qty: 1,
+          isVeg: item.isVeg,
+        },
+      ])
+      toast.success(`${item.name} x1 added to cart`)
     }
-  };
-
-  const updateQuantity = (id, qty) => {
-    if (qty <= 0) {
-      setCart(cart.filter((c) => c.id !== id));
-    } else {
-      setCart(cart.map((c) => (c.id === id ? { ...c, qty } : c)));
-    }
-  };
-
-  const removeFromCart = (id) => {
-    setCart(cart.filter((c) => c.id !== id));
-  };
-
-  const clearCart = () => {
-    setCart([]);
-  };
-
-  const subtotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
-  const tax = subtotal * 0.13; // 13% tax
-  const total = subtotal + tax;
-
-  const filteredItems = menuItems.filter((item) =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const handleLogout = () => {
-    localStorage.removeItem("accessToken");
-    window.location.href = "/login";
-  };
-
-  const handlePlaceOrder = () => {
-    if (!selectedTable) {
-      alert("Please select a table");
-      return;
-    }
-    if (cart.length === 0) {
-      alert("Cart is empty");
-      return;
-    }
-
-    // TODO: Send order to backend when endpoint is ready
-    alert(`Order placed for Table ${tables.find(t => t.id === selectedTable)?.tableNumber}!\nTotal: $${total.toFixed(2)}`);
-
-    // Clear cart after order
-    clearCart();
-    setSelectedTable("");
-  };
-
-  const sidebarItems = [
-    { name: "Dashboard", icon: LayoutDashboard, path: "/admin-dashboard" },
-    { name: "Tables", icon: TableIcon, path: "/tables" },
-    { name: "Menu", icon: MenuIcon, path: "/menu" },
-    { name: "POS", icon: ShoppingBag, path: "/pos" },
-    { name: "Kitchen", icon: ChefHat, path: "/kitchen" },
-    { name: "Bills", icon: Receipt, path: "/bills" },
-    { name: "Reservations", icon: Calendar, path: "/reservations" },
-    { name: "Settings", icon: Settings, path: "/settings" },
-  ];
-
-  if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-gray-100">
-        <p className="text-2xl text-gray-600">Loading POS system...</p>
-      </div>
-    );
   }
 
+  const updateQuantity = (menuItemId, qty) => {
+    if (qty <= 0) {
+      setCart(cart.filter((c) => c.menuItemId !== menuItemId))
+      toast.success("Item has been removed from cart")
+    } else {
+      setCart(cart.map((c) => (c.menuItemId === menuItemId ? { ...c, qty } : c)))
+    }
+  }
+
+  const removeFromCart = (menuItemId) => {
+    setCart(cart.filter((c) => c.menuItemId !== menuItemId))
+    toast.success("Item has been removed from cart")
+  }
+
+  const clearCart = () => {
+    setCart([])
+    toast.success("Cart has been cleared")
+  }
+
+  const placeOrder = () => {
+    if (!selectedTable) {
+      toast.error("Please select a table")
+      return
+    }
+    if (cart.length === 0) {
+      toast.error("Please add items to cart")
+      return
+    }
+
+    toast.success("Order has been placed successfully")
+    setCart([])
+    setSelectedTable("")
+  }
+
+  const subtotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0)
+  const tax = subtotal * 0.13
+  const total = subtotal + tax
+
+  const filteredItems = menuItems.filter((item) => {
+    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesCategory = selectedCategory === "all" || item.categoryId === selectedCategory
+    return matchesSearch && matchesCategory && item.isAvailable
+  })
+
+  const surplusItemIds = dailySpecials.map((s) => s.menuItemId)
+
   return (
-    <div className="flex h-screen bg-gray-100">
-      {/* Sidebar */}
-      <div className="w-64 bg-gray-900 text-white flex flex-col">
-        <div className="p-6 border-b border-gray-800">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
-              <ChefHat className="w-6 h-6 text-white" />
-            </div>
-            <h1 className="text-xl font-bold">RestaurantOS</h1>
-          </div>
-        </div>
-
-        <nav className="flex-1 p-4">
-          <ul className="space-y-1">
-            {sidebarItems.map((item) => (
-              <li
-                key={item.name}
-                className={`rounded-lg transition ${
-                  location.pathname === item.path ? "bg-gray-800 font-medium" : "hover:bg-gray-800"
-                }`}
-              >
-                <Link to={item.path} className="flex items-center gap-3 px-4 py-3">
-                  <item.icon className="w-5 h-5" />
-                  <span>{item.name}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-
-        <div className="p-6 border-t border-gray-800">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold">
-              A
-            </div>
-            <div>
-              <p className="font-medium">Admin User</p>
-              <p className="text-sm text-gray-400">ADMIN</p>
-            </div>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 bg-white text-gray-900 py-2.5 rounded-lg font-medium hover:bg-gray-100 transition"
-          >
-            <LogOut className="w-4 h-4" />
-            Logout
-          </button>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 flex">
-        {/* Left: Menu Items */}
+    <div className="flex h-screen">
+      <Sidebar />
+      <div className="flex-1 overflow-hidden flex">
         <div className="flex-1 overflow-auto p-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-6">Point of Sale</h1>
-
-          <div className="flex gap-4 mb-6">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search menu items..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500"
-              />
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-foreground mb-2">Point of Sale</h1>
+            <div className="flex gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search menu items..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <Select value={selectedTable} onValueChange={setSelectedTable}>
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="Select table" />
+                </SelectTrigger>
+                <SelectContent>
+                  {tables.map((table) => (
+                    <SelectItem key={table.id} value={table.id}>
+                      {table.name} ({table.seats} seats)
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            <select
-              value={selectedTable}
-              onChange={(e) => setSelectedTable(e.target.value)}
-              className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500"
-            >
-              <option value="">Select table</option>
-              {tables
-                .filter((t) => t.status === "AVAILABLE") // Only show available tables
-                .map((table) => (
-                  <option key={table.id} value={table.id}>
-                    Table {table.tableNumber || table.number || table.id.slice(0, 8)} ({table.seats} seats)
-                  </option>
-                ))}
-            </select>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {filteredItems.map((item) => (
-              <div
-                key={item.id}
-                onClick={() => addToCart(item)}
-                className="bg-white rounded-xl shadow-sm border border-gray-200 cursor-pointer hover:shadow-md transition"
-              >
-                <img
-                  src={item.imageUrl || "https://via.placeholder.com/400x300?text=No+Image"}
-                  alt={item.name}
-                  className="w-full h-48 object-cover rounded-t-xl"
-                  onError={(e) => (e.target.src = "https://via.placeholder.com/400x300?text=No+Image")}
-                />
-                <div className="p-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                      {item.name}
-                      {item.isVeg && <Leaf className="w-4 h-4 text-green-600" />}
-                    </h3>
-                    <p className="text-xl font-bold text-orange-600">
-                      ${Number(item.price || 0).toFixed(2)}
-                    </p>
+          <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="w-full">
+            <TabsList className="mb-4">
+              <TabsTrigger value="all">All Items</TabsTrigger>
+              {categories.map((cat) => (
+                <TabsTrigger key={cat.id} value={cat.id}>
+                  {cat.name}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {filteredItems.map((item) => {
+              const isSurplus = surplusItemIds.includes(item.id)
+              const surplusItem = dailySpecials.find((s) => s.menuItemId === item.id)
+              const discountedPrice = isSurplus
+                ? item.price * (1 - Number(surplusItem?.discountPct || 0) / 100)
+                : item.price
+
+              return (
+                <Card
+                  key={item.id}
+                  className="cursor-pointer hover:border-primary transition-all group relative overflow-hidden"
+                  onClick={() => addToCart(item)}
+                >
+                  {isSurplus && (
+                    <div className="absolute top-2 right-2 z-10">
+                      <Badge className="bg-chart-3 text-chart-3-foreground">
+                        <Tag className="h-3 w-3 mr-1" />
+                        {surplusItem?.discountPct}% OFF
+                      </Badge>
+                    </div>
+                  )}
+                  <div className="aspect-square relative overflow-hidden bg-muted">
+                    <img
+                      src={`${item.imageUrl}?height=200&width=200`}
+                      alt={item.name}
+                      className="object-cover w-full h-full group-hover:scale-105 transition-transform"
+                    />
                   </div>
-                  <p className="text-sm text-gray-600">
-                    {item.description || "No description"}
-                  </p>
-                </div>
-              </div>
-            ))}
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between mb-2">
+                      <h3 className="font-semibold text-foreground text-sm leading-tight flex-1">{item.name}</h3>
+                      {item.isVeg && <Leaf className="h-4 w-4 text-chart-2 ml-2 shrink-0" />}
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{item.description}</p>
+                    <div className="flex items-center gap-2">
+                      {isSurplus ? (
+                        <>
+                          <p className="text-lg font-bold text-foreground">${discountedPrice}</p>
+                          <p className="text-sm text-muted-foreground line-through">${item.price}</p>
+                        </>
+                      ) : (
+                        <p className="text-lg font-bold text-foreground">${item.price}</p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
           </div>
         </div>
 
-        {/* Right: Cart */}
-        <div className="w-96 bg-white border-l border-gray-200 flex flex-col">
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-              <ShoppingCart className="w-6 h-6" />
+        <div className="w-96 bg-card border-l border-border flex flex-col">
+          <div className="p-6 border-b border-border">
+            <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+              <ShoppingCart className="h-5 w-5" />
               Current Order
             </h2>
             {selectedTable && (
-              <p className="text-sm text-gray-600 mt-1">
-                Table {tables.find((t) => t.id === selectedTable)?.tableNumber || "Selected"}
+              <p className="text-sm text-muted-foreground mt-1">
+                {tables.find((t) => t.id === selectedTable)?.name}
               </p>
             )}
           </div>
 
-          <div className="flex-1 overflow-auto p-6">
+          <ScrollArea className="flex-1 p-6">
             {cart.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center">
-                <ShoppingCart className="w-16 h-16 text-gray-300 mb-4" />
-                <p className="text-gray-500 font-medium">Cart is empty</p>
-                <p className="text-sm text-gray-400 mt-1">Add items to get started</p>
+              <div className="flex flex-col items-center justify-center h-full text-center py-12">
+                <ShoppingCart className="h-12 w-12 text-muted-foreground/40 mb-4" />
+                <p className="text-muted-foreground">Cart is empty</p>
+                <p className="text-sm text-muted-foreground mt-1">Add items to get started</p>
               </div>
             ) : (
               <div className="space-y-4">
                 {cart.map((item) => (
-                  <div key={item.id} className="bg-gray-50 rounded-lg p-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <p className="font-medium text-gray-900 flex items-center gap-2">
+                  <div key={item.menuItemId} className="flex flex-col gap-2 p-3 rounded-lg bg-muted/50">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <p className="font-medium text-sm text-foreground flex items-center gap-2">
                           {item.name}
-                          {item.isVeg && <Leaf className="w-4 h-4 text-green-600" />}
+                          {item.isVeg && <Leaf className="h-3 w-3 text-chart-2" />}
                         </p>
-                        <p className="text-sm text-gray-600">${Number(item.price).toFixed(2)} each</p>
+                        <p className="text-sm text-muted-foreground mt-0.5">${Number(item.price)} each</p>
                       </div>
-                      <button
-                        onClick={() => removeFromCart(item.id)}
-                        className="text-red-500 hover:text-red-700"
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeFromCart(item.menuItemId)}
+                        className="h-6 w-6 p-0"
                       >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={() => updateQuantity(item.id, item.qty - 1)}
-                        className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => updateQuantity(item.menuItemId, item.qty - 1)}
+                        className="h-8 w-8 p-0"
                       >
-                        <Minus className="w-4 h-4" />
-                      </button>
-                      <span className="w-16 text-center font-medium">{item.qty}</span>
-                      <button
-                        onClick={() => updateQuantity(item.id, item.qty + 1)}
-                        className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
+                        <Minus className="h-3 w-3" />
+                      </Button>
+                      <Input
+                        type="number"
+                        value={item.qty}
+                        onChange={(e) => updateQuantity(item.menuItemId, Number.parseInt(e.target.value) || 1)}
+                        className="h-8 w-16 text-center"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => updateQuantity(item.menuItemId, item.qty + 1)}
+                        className="h-8 w-8 p-0"
                       >
-                        <Plus className="w-4 h-4" />
-                      </button>
-                      <span className="ml-auto font-bold text-gray-900">
-                        ${(item.price * item.qty).toFixed(2)}
+                        <Plus className="h-3 w-3" />
+                      </Button>
+                      <span className="ml-auto font-semibold text-foreground">
+                        ${(Number(item.price) * item.qty).toFixed(2)}
                       </span>
                     </div>
                   </div>
                 ))}
               </div>
             )}
-          </div>
+          </ScrollArea>
 
-          <div className="p-6 border-t border-gray-200">
-            <div className="space-y-2 mb-4">
-              <div className="flex justify-between text-gray-600">
-                <span>Subtotal</span>
-                <span>${subtotal.toFixed(2)}</span>
+          <div className="p-6 border-t border-border space-y-4">
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Subtotal</span>
+                <span className="text-foreground">${subtotal.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between text-gray-600">
-                <span>Tax (13%)</span>
-                <span>${tax.toFixed(2)}</span>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Tax (13%)</span>
+                <span className="text-foreground">${tax.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between text-xl font-bold pt-3 border-t">
-                <span>Total</span>
-                <span>${total.toFixed(2)}</span>
+              <div className="flex justify-between text-lg font-bold pt-2 border-t">
+                <span className="text-foreground">Total</span>
+                <span className="text-foreground">${total.toFixed(2)}</span>
               </div>
             </div>
-            <div className="flex gap-3">
-              <button
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
                 onClick={clearCart}
                 disabled={cart.length === 0}
-                className="flex-1 py-3 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 disabled:opacity-50"
+                className="flex-1 bg-transparent"
               >
                 Clear
-              </button>
-              <button
-                onClick={handlePlaceOrder}
-                disabled={cart.length === 0 || !selectedTable}
-                className="flex-1 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium flex items-center justify-center gap-2 disabled:opacity-50 transition"
-              >
-                <Send className="w-5 h-5" />
+              </Button>
+              <Button onClick={placeOrder} disabled={cart.length === 0 || !selectedTable} className="flex-1">
+                <Send className="mr-2 h-4 w-4" />
                 Place Order
-              </button>
+              </Button>
             </div>
           </div>
         </div>
       </div>
     </div>
-  );
+  )
 }

@@ -1,5 +1,5 @@
 import { StatusCodes } from "http-status-codes";
-import type { UserResponse, CreateUser, LoginUser, LoginResponse } from "./userModel";
+import type { UserResponse, CreateUser, LoginUser, LoginResponse, UpdateUser, ForgotPassword, ResetPassword } from "./userModel";
 import { UserRepository } from "./userRepository";
 import { ServiceResponse } from "@/common/utils/serviceResponse";
 import { AuditLogQueue } from "@/queues/instances/auditlogQueue";
@@ -9,6 +9,8 @@ import jwt, { Secret } from "jsonwebtoken";
 import { tokenBlacklistService } from "@/common/services/tokenBlacklistService";
 import { AUTH_AUDIT_ACTIONS } from "@/common/constants/authAuditActions";
 import logger from "@/common/utils/logger";
+import crypto from "crypto";
+import { sendEmailService } from "@/common/services/sendEmailService";
 
 export class UserService {
     private auditLogQueue = new AuditLogQueue();
@@ -216,6 +218,115 @@ export class UserService {
         } catch (error) {
             logger.error("Error logging out user:", error);
             return ServiceResponse.failure("Error logging out user", null, StatusCodes.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    async getUserById(userId: string): Promise<ServiceResponse<UserResponse | null>> {
+        try {
+            const user = await this.userRepository.findById(userId);
+            if (!user) {
+                return ServiceResponse.failure("Users Not Found", null, StatusCodes.NOT_FOUND);
+            }
+            return ServiceResponse.success<UserResponse>("User found successfully", user, StatusCodes.OK)
+        } catch (error) {
+            logger.error("Error Finding Users", error);
+            return ServiceResponse.failure("Error finding user", null, StatusCodes.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    async getAllUsers(): Promise<ServiceResponse<UserResponse[] | null>> {
+        try {
+            const users = await this.userRepository.getAllUsers();
+            if (!users) {
+                return ServiceResponse.failure("Users Not Found", null, StatusCodes.NOT_FOUND);
+            }
+            return ServiceResponse.success<UserResponse[]>("Users found successfully", users, StatusCodes.OK)
+        } catch (error) {
+            logger.error("Error Finding Users", error);
+            return ServiceResponse.failure("Error finding users", null, StatusCodes.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    async updateUser(userId: string, data: UpdateUser): Promise<ServiceResponse<UserResponse | null>> {
+        try {
+            const user = await this.userRepository.findById(userId);
+            if (!user) {
+                return ServiceResponse.failure("User not found", null, StatusCodes.NOT_FOUND);
+            }
+            const updatedUser = await this.userRepository.updateUser(userId, data);
+
+            await this.auditLogQueue.add("createAuditLog", {
+                userId: user.id,
+                action: AUTH_AUDIT_ACTIONS.ACCOUNT_UPDATED,
+                resourceType: "User",
+                resourceId: user.id,
+                payload: updatedUser,
+                ip: null,
+                userAgent: null,
+            });
+            return ServiceResponse.success<UserResponse>("User updated successfully", updatedUser, StatusCodes.OK);
+        } catch (error) {
+            logger.error("Error updating user:", error);
+            return ServiceResponse.failure("Error updating user", null, StatusCodes.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    async deleteUser(userId: string): Promise<ServiceResponse<UserResponse | null>> {
+        try {
+            const user = await this.userRepository.findById(userId);
+            if (!user) {
+                return ServiceResponse.failure("User not found", null, StatusCodes.NOT_FOUND);
+            }
+            const deletedUser = await this.userRepository.deleteUser(userId);
+
+            await this.auditLogQueue.add("createAuditLog", {
+                userId: user.id,
+                action: AUTH_AUDIT_ACTIONS.ACCOUNT_DELETED,
+                resourceType: "User",
+                resourceId: user.id,
+                payload: deletedUser,
+                ip: null,
+                userAgent: null,
+            })
+            return ServiceResponse.success<UserResponse>("User deleted successfully", deletedUser, StatusCodes.OK);
+        } catch (error) {
+            logger.error("Error deleting user:", error);
+            return ServiceResponse.failure("Error deleting user", null, StatusCodes.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    async forgotPassword(data: ForgotPassword): Promise<ServiceResponse<null>> {
+        try {
+            const user = await this.userRepository.findUserByEmail(data.email);
+            if (!user) {
+                return ServiceResponse.failure("Email Does Not Exist", null, StatusCodes.NOT_FOUND);
+            }
+
+            const resetToken = crypto.randomBytes(32).toString("hex");
+            const resetTokenExpiry = new Date(Date.now() + 15 * 60 * 1000); 
+            await this.userRepository.createPasswordResetToken(user.id, resetToken, resetTokenExpiry);
+
+            await sendEmailService.sendResetPasswordEmail(data.email, resetToken);
+            return ServiceResponse.success("Password reset email sent successfully", null, StatusCodes.OK);
+        } catch (error) {
+            logger.error("Error sending password reset email:", error);
+            return ServiceResponse.failure("Error sending password reset email", null, StatusCodes.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    async resetPassword(token: string, data: ResetPassword): Promise<ServiceResponse<null>> {
+        try {
+            const user = await this.userRepository.findUserByToken(token);
+            if (!user) {
+                return ServiceResponse.failure("Invalid or expired token", null, StatusCodes.BAD_REQUEST);
+            }
+
+            const hashedPassword = await bcrypt.hash(data.password, 10);
+            await this.userRepository.updatePassword(user.id, hashedPassword);
+            return ServiceResponse.success("Password reset successfully", null, StatusCodes.OK);
+        } catch (error) {
+            logger.error("Error resetting password:", error);
+            return ServiceResponse.failure("Error resetting password", null, StatusCodes.INTERNAL_SERVER_ERROR);
         }
     }
 }

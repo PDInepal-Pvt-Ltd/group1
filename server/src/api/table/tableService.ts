@@ -7,6 +7,7 @@ import { AuditLogQueue } from "@/queues/instances/auditlogQueue";
 import { TABLE_AUDIT_ACTIONS } from "@/common/constants/tableAuditActions";
 import logger from "@/common/utils/logger";
 import { TableStatus } from "@/generated/prisma/enums";
+import { qrCodeService } from "@/common/services/qrCodeService";
 
 export class TableService {
     private auditLogQueue = new AuditLogQueue();
@@ -30,6 +31,11 @@ export class TableService {
                 }
             }
             const table = await this.tableRepository.createTable(data);
+
+            const qrCode = await qrCodeService.generateTableQrCode(table.id);
+            if (qrCode) {
+                await this.tableRepository.updateTableQrCode(table.id, qrCode);
+            }
             await this.auditLogQueue.add("createAuditLog", {
                 userId,
                 action: TABLE_AUDIT_ACTIONS.TABLE_CREATED,

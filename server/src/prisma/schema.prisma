@@ -110,6 +110,7 @@ model Table {
   updatedAt  DateTime   @updatedAt
   deletedAt  DateTime?  // Soft delete
   name       String
+  qrCodeUrl  String?
   seats      Int
   status     TableStatus @default(AVAILABLE)
   assignedTo String?     // FK to User.id (nullable)
@@ -222,11 +223,11 @@ model Order {
   notes      String?
   createdBy  String?     // FK to User.id; nullable if POS/QR guest
   isQrOrder  Boolean     @default(false)
-  subTotal   Decimal?    @db.Decimal(10,2) // optional denormalized subTotal snapshot
+  subTotal   Decimal  @db.Decimal(10,2) // denormalized subTotal snapshot
   // Relations
   table      Table      @relation(fields: [tableId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   creator    User?      @relation("OrderCreator", fields: [createdBy], references: [id], onDelete: SetNull)
-  items      OrderItem[]
+  items      OrderItem[] 
   bill       Bill?
   kdsEvents  KdsEvent[]
 

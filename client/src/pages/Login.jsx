@@ -1,113 +1,119 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import API from "../api/axios";
+import { ChefHat } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+// Redux hooks and actions
+import { loginUser } from "../store/authSlice";
 
-export default function Login() {
+// UI Components
+import { Button } from "@/components/ui/button";
+import { CardContent, CardHeader, Card, CardTitle, CardDescription } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-
+  
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  
+  // Select loading and error states from Redux
+  const { error: reduxError, loading } = useSelector((state) => state.auth);
+  console.log(loading)
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!email || !password) {
-      setError("Please enter both email and password");
-      return;
-    }
-
-    setLoading(true);
-    setError("");
-
     try {
-      const response = await API.post("/api/user/login", {
-        email,
-        password,
-      });
-
-      console.log("Full login response:", response.data); // Keep this for debugging if needed
-
-      // CORRECT: Token is nested inside response.data.data
-      const accessToken = response.data?.data?.accessToken;
-
-      if (!accessToken) {
-        setError("Login succeeded but no access token received. Check backend.");
-        console.error("No accessToken found in response:", response.data);
-        setLoading(false);
-        return;
-      }
-
-      // Save token to localStorage
-      localStorage.setItem("accessToken", accessToken);
-
-      console.log("Login successful! Token saved.");
-
-      // Redirect to dashboard
+      // .unwrap() allows us to catch errors if the thunk fails
+      await dispatch(loginUser({ email, password })).unwrap();
       navigate("/admin-dashboard");
     } catch (err) {
-      console.error("Login error:", err);
-
-      if (err.response?.status === 404) {
-        setError("Login endpoint not found. Check server.");
-      } else if (err.response?.status === 401 || err.response?.status === 400) {
-        setError("Invalid email or password.");
-      } else {
-        setError(
-          err.response?.data?.message || "Login failed. Please try again."
-        );
-      }
-    } finally {
-      setLoading(false);
+      // Error is handled by Redux state, but you can catch it here if needed
+      console.error("Login failed:", err);
     }
   };
 
+  const demoAccounts = [
+    { email: "wongalish@gmail.com", password: "password", role: "Admin" },
+    { email: "cashier@restaurant.com", password: "cashier123", role: "Cashier" },
+    { email: "waiter@restaurant.com", password: "waiter123", role: "Waiter" },
+    { email: "kitchen@restaurant.com", password: "kitchen123", role: "Kitchen" },
+  ];
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
-        <h2 className="text-2xl font-bold text-center mb-6">Admin Login</h2>
-
-        {error && (
-          <p className="text-red-600 bg-red-50 p-3 rounded mb-4 text-center">
-            {error}
-          </p>
-        )}
-
-        <form onSubmit={handleLogin} className="space-y-5">
-          <div className="form-group">
-            <input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={loading}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500"
-            />
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1 text-center">
+          <div className="flex justify-center mb-2">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground">
+              <ChefHat className="h-6 w-6" />
+            </div>
           </div>
+          <CardTitle className="text-2xl font-bold">RestaurantQrify</CardTitle>
+          <CardDescription>Sign in to manage your restaurant</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
+                required
+              />
+            </div>
 
-          <div className="form-group">
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              disabled={loading}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500"
-            />
+            {/* Display Redux error if it exists */}
+            {reduxError && (
+              <Alert variant="destructive">
+                <AlertDescription>{reduxError}</AlertDescription>
+              </Alert>
+            )}
+
+            <Button type="submit" className="w-full cursor-pointer" >
+              {/* {loading ? "Signing In..." : "Sign In"} */}
+              Sign In
+            </Button>
+          </form>
+
+          <div className="mt-6">
+            <p className="text-sm font-medium text-muted-foreground mb-3">Demo Accounts:</p>
+            <div className="space-y-2">
+              {demoAccounts.map((account) => (
+                <button
+                  key={account.email}
+                  type="button"
+                  onClick={() => {
+                    setEmail(account.email);
+                    setPassword(account.password);
+                  }}
+                  className="w-full cursor-pointer text-left px-3 py-2 text-xs rounded-md bg-muted hover:bg-muted/80 transition-colors"
+                >
+                  <span className="font-medium">{account.role}</span>
+                  <span className="text-muted-foreground ml-2">{account.email}</span>
+                </button>
+              ))}
+            </div>
           </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-orange-500 text-white py-3 rounded-lg font-medium hover:bg-orange-600 disabled:bg-gray-400 transition"
-          >
-            {loading ? "Logging in..." : "Login"}
-          </button>
-        </form>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
+
+export default Login;
