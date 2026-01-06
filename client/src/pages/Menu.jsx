@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -14,20 +14,73 @@ import {
   Leaf,
   CheckCircle2,
   Tag,
-  TrendingUp,  // ← Added this
+  TrendingUp,
 } from "lucide-react";
-import { mockMenuItems } from "../lib/mock-data";
+import API from "../api/axios"; // Your configured axios instance
 
 export default function MenuPage() {
   const location = useLocation();
-  const [menuItems] = useState(mockMenuItems);
+
+  // State for real data from backend
+  const [menuItems, setMenuItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("All Items");
 
-  const categories = ["All Items", "Appetizers", "Main Course", "Desserts", "Beverages"];
+useEffect(() => {
+  const fetchMenuItems = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-  const filteredItems = selectedCategory === "All Items" 
-    ? menuItems 
-    : menuItems.filter(item => item.category?.name === selectedCategory);
+      // CORRECT ENDPOINT WITH /api/ PREFIX
+      const response = await API.get("/api/menu-item");
+
+      console.log("Raw API Response:", response.data);
+
+      let items = [];
+      if (Array.isArray(response.data)) {
+        items = response.data;
+      } else if (response.data?.data && Array.isArray(response.data.data)) {
+        items = response.data.data;
+      } else {
+        console.warn("Unexpected format:", response.data);
+        items = [];
+      }
+
+      setMenuItems(items);
+    } catch (err) {
+      console.error("Error fetching menu items:", err);
+      setError("Failed to load menu items. Check console for details.");
+      setMenuItems([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchMenuItems();
+}, []);
+
+  // Safely extract categories from real data
+  const categoriesSet = new Set(["All Items"]);
+  if (Array.isArray(menuItems)) {
+    menuItems.forEach((item) => {
+      if (item.category?.name) {
+        categoriesSet.add(item.category.name);
+      } else if (typeof item.category === "string") {
+        categoriesSet.add(item.category);
+      }
+    });
+  }
+  const categories = Array.from(categoriesSet);
+
+  // Filter items by category
+  const filteredItems = selectedCategory === "All Items"
+    ? menuItems
+    : menuItems.filter((item) =>
+        item.category?.name === selectedCategory ||
+        item.category === selectedCategory
+      );
 
   const menuItemsList = [
     { name: "Dashboard", icon: LayoutDashboard, path: "/admin-dashboard" },
@@ -44,6 +97,33 @@ export default function MenuPage() {
     localStorage.removeItem("accessToken");
     window.location.href = "/";
   };
+
+  // Loading screen
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-100">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-xl text-gray-700">Loading menu items...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error screen
+  if (error) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-100">
+        <div className="text-center max-w-md">
+          <p className="text-2xl font-bold text-red-600 mb-4">Error Loading Menu</p>
+          <p className="text-gray-700 mb-6">{error}</p>
+          <p className="text-sm text-gray-500">
+            Tip: Check browser console (F12) for "Raw API Response" log to see what the backend returned.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -64,7 +144,9 @@ export default function MenuPage() {
               <li
                 key={item.name}
                 className={`rounded-lg transition ${
-                  location.pathname === item.path ? "bg-gray-800 font-medium" : "hover:bg-gray-800"
+                  location.pathname === item.path
+                    ? "bg-gray-800 font-medium"
+                    : "hover:bg-gray-800"
                 }`}
               >
                 <Link to={item.path} className="flex items-center gap-3 px-4 py-3">
@@ -124,7 +206,9 @@ export default function MenuPage() {
               <p className="text-sm font-medium text-gray-600">Available</p>
               <CheckCircle2 className="w-8 h-8 text-green-600" />
             </div>
-            <p className="text-3xl font-bold text-gray-900">{menuItems.filter(m => m.isAvailable).length}</p>
+            <p className="text-3xl font-bold text-gray-900">
+              {menuItems.filter((m) => m.isAvailable !== false).length}
+            </p>
           </div>
 
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -132,7 +216,9 @@ export default function MenuPage() {
               <p className="text-sm font-medium text-gray-600">Vegetarian</p>
               <Leaf className="w-8 h-8 text-green-600" />
             </div>
-            <p className="text-3xl font-bold text-gray-900">{menuItems.filter(m => m.isVeg).length}</p>
+            <p className="text-3xl font-bold text-gray-900">
+              {menuItems.filter((m) => m.isVeg).length}
+            </p>
           </div>
 
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -140,11 +226,11 @@ export default function MenuPage() {
               <p className="text-sm font-medium text-gray-600">Categories</p>
               <Tag className="w-8 h-8 text-red-600" />
             </div>
-            <p className="text-3xl font-bold text-gray-900">4</p>
+            <p className="text-3xl font-bold text-gray-900">{categories.length - 1}</p>
           </div>
         </div>
 
-        {/* Menu Items */}
+        {/* Menu Items Grid */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-semibold text-gray-900">Menu Items</h2>
@@ -165,32 +251,52 @@ export default function MenuPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredItems.map((item) => (
-              <div key={item.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <img
-                  src={item.imageUrl}
-                  alt={item.name}
-                  className="w-full h-48 object-cover"
-                />
-                <div className="p-6">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                        {item.name}
-                        {item.isVeg && <Leaf className="w-5 h-5 text-green-600" />}
-                      </h3>
-                      <span className="inline-block mt-2 px-3 py-1 bg-orange-100 text-orange-700 text-xs font-medium rounded-full">
-                        {item.category?.name || "Uncategorized"}  {/* ← Safe fallback */}
-                      </span>
+          {filteredItems.length === 0 ? (
+            <p className="text-center text-gray-500 py-12 text-lg">
+              No items found in this category.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredItems.map((item) => (
+                <div
+                  key={item.id || item._id || item.name}
+                  className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition"
+                >
+                  <img
+                    src={
+                      item.imageUrl ||
+                      item.image ||
+                      "https://via.placeholder.com/400x300?text=No+Image"
+                    }
+                    alt={item.name}
+                    className="w-full h-48 object-cover"
+                    onError={(e) => {
+                      e.target.src = "https://via.placeholder.com/400x300?text=No+Image";
+                    }}
+                  />
+                  <div className="p-6">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                          {item.name || "Unnamed Item"}
+                          {item.isVeg && <Leaf className="w-5 h-5 text-green-600" />}
+                        </h3>
+                        <span className="inline-block mt-2 px-3 py-1 bg-orange-100 text-orange-700 text-xs font-medium rounded-full">
+                          {item.category?.name || item.category || "Uncategorized"}
+                        </span>
+                      </div>
+                      <p className="text-2xl font-bold text-orange-600">
+                        ${Number(item.price || 0).toFixed(2)}
+                      </p>
                     </div>
-                    <p className="text-2xl font-bold text-orange-600">${item.price.toFixed(2)}</p>
+                    <p className="text-gray-600 mt-3">
+                      {item.description || "No description available."}
+                    </p>
                   </div>
-                  <p className="text-gray-600 mt-3">{item.description}</p>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -15,37 +15,57 @@ import {
   ShoppingCart,
   TrendingUp,
 } from "lucide-react";
-import { mockTables, mockMenuItems, mockOrders } from "../lib/mock-data";
+import API from "../api/axios"; // Your configured API with Bearer token
 
 export default function AdminDashboard() {
   const location = useLocation();
 
-  // Use mock data directly
-  const [tables] = useState(mockTables);
-  const [menuItems] = useState(mockMenuItems);
-  const [orders] = useState(mockOrders);
-  const [revenue] = useState(43.61); // From your mock bill
+  const [tables, setTables] = useState([]);
+  const [menuItems, setMenuItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const menuItemsList = [
-    { name: "Dashboard", icon: LayoutDashboard, path: "/admin-dashboard" },
-    { name: "Tables", icon: TableIcon, path: "/tables" },
-    { name: "Menu", icon: MenuIcon, path: "/menu" },
-    { name: "POS", icon: ShoppingBag, path: "/pos" },
-    { name: "Kitchen", icon: ChefHat, path: "/kitchen" },
-    { name: "Bills", icon: Receipt, path: "/bills" },
-    { name: "Reservations", icon: Calendar, path: "/reservations" },
-    { name: "Settings", icon: Settings, path: "/settings" },
-  ];
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
+        // Only fetch what exists in backend
+        const [tablesRes, menuRes] = await Promise.all([
+          API.get("/api/table"),
+          API.get("/api/menu-item"),
+        ]);
+
+        console.log("Tables:", tablesRes.data);
+        console.log("Menu Items:", menuRes.data);
+
+        const tablesData = tablesRes.data?.data || tablesRes.data || [];
+        const menuData = menuRes.data?.data || menuRes.data || [];
+
+        setTables(Array.isArray(tablesData) ? tablesData : []);
+        setMenuItems(Array.isArray(menuData) ? menuData : []);
+
+      } catch (err) {
+        console.error("Dashboard fetch error:", err);
+        setError("Failed to load dashboard data. Check console.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  // Calculations based on real data
   const occupiedTables = tables.filter((t) => t.status === "OCCUPIED").length;
-  const pendingOrders = orders.filter((o) => o.status === "PENDING").length;
   const availableMenuItems = menuItems.filter((m) => m.isAvailable !== false).length;
 
   const stats = [
     {
       title: "Total Revenue",
-      value: `$${revenue.toFixed(2)}`,
-      desc: "Today's earnings",
+      value: "$0.00",
+      desc: "Orders endpoint not available",
       icon: DollarSign,
       color: "text-green-600",
     },
@@ -58,8 +78,8 @@ export default function AdminDashboard() {
     },
     {
       title: "Active Orders",
-      value: orders.length.toString(),
-      desc: `${pendingOrders} pending`,
+      value: "—",
+      desc: "Orders endpoint not available",
       icon: ShoppingCart,
       color: "text-red-600",
     },
@@ -70,6 +90,17 @@ export default function AdminDashboard() {
       icon: TrendingUp,
       color: "text-blue-600",
     },
+  ];
+
+  const menuItemsList = [
+    { name: "Dashboard", icon: LayoutDashboard, path: "/admin-dashboard" },
+    { name: "Tables", icon: TableIcon, path: "/tables" },
+    { name: "Menu", icon: MenuIcon, path: "/menu" },
+    { name: "POS", icon: ShoppingBag, path: "/pos" },
+    { name: "Kitchen", icon: ChefHat, path: "/kitchen" },
+    { name: "Bills", icon: Receipt, path: "/bills" },
+    { name: "Reservations", icon: Calendar, path: "/reservations" },
+    { name: "Settings", icon: Settings, path: "/settings" },
   ];
 
   const getTableColor = (status) => {
@@ -84,8 +115,32 @@ export default function AdminDashboard() {
 
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
-    window.location.href = "/";
+    window.location.href = "/login";
   };
+
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-100">
+        <p className="text-xl text-gray-600">Loading dashboard...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-100">
+        <div className="text-center">
+          <p className="text-xl text-red-600 mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -106,7 +161,9 @@ export default function AdminDashboard() {
               <li
                 key={item.name}
                 className={`rounded-lg transition ${
-                  location.pathname === item.path ? "bg-gray-800 font-medium" : "hover:bg-gray-800"
+                  location.pathname === item.path
+                    ? "bg-gray-800 font-medium"
+                    : "hover:bg-gray-800"
                 }`}
               >
                 <Link to={item.path} className="flex items-center gap-3 px-4 py-3">
@@ -148,7 +205,10 @@ export default function AdminDashboard() {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
           {stats.map((stat) => (
-            <div key={stat.title} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div
+              key={stat.title}
+              className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+            >
               <div className="flex items-center justify-between mb-4">
                 <p className="text-sm font-medium text-gray-600">{stat.title}</p>
                 <stat.icon className={`w-6 h-6 ${stat.color}`} />
@@ -159,33 +219,19 @@ export default function AdminDashboard() {
           ))}
         </div>
 
-        {/* Recent Orders & Table Status */}
+        {/* Table Status */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Recent Orders */}
+          {/* Recent Orders - Not available yet */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200">
             <div className="p-6 border-b border-gray-200">
               <h2 className="text-xl font-semibold text-gray-900">Recent Orders</h2>
               <p className="text-sm text-gray-600 mt-1">Latest orders from your restaurant</p>
             </div>
             <div className="p-6">
-              <div className="space-y-4">
-                {orders.slice(0, 5).map((order) => (
-                  <div key={order.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 font-bold text-sm">
-                        {order.tableNumber}
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900">Table {order.tableNumber}</p>
-                        <p className="text-sm text-gray-600">Guest</p>
-                      </div>
-                    </div>
-                    <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs">
-                      {order.status}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              <p className="text-center text-gray-500 py-8">
+                Orders endpoint not available yet.<br />
+                Waiting for backend implementation.
+              </p>
             </div>
           </div>
 
@@ -196,35 +242,64 @@ export default function AdminDashboard() {
               <p className="text-sm text-gray-600 mt-1">Current status of all tables</p>
             </div>
             <div className="p-6">
-              <div className="grid grid-cols-4 gap-4 mb-8">
-                {tables.map((table) => (
-                  <div
-                    key={table.id}
-                    className={`p-6 rounded-xl border-2 text-center transition hover:scale-105 ${getTableColor(table.status)}`}
-                  >
-                    <p className="text-2xl font-bold text-gray-900">
-                      {table.tableNumber}
-                    </p>
-                    <p className="text-sm text-gray-600 mt-1">{table.seats} seats</p>
-                  </div>
-                ))}
-              </div>
+              {tables.length === 0 ? (
+                <p className="text-center text-gray-500 py-8">No tables configured</p>
+              ) : (
+                <>
+                 {/* Table Status */}
+<div className="bg-white rounded-xl shadow-sm border border-gray-200">
+  <div className="p-6 border-b border-gray-200">
+    <h2 className="text-xl font-semibold text-gray-900">Table Status</h2>
+    <p className="text-sm text-gray-600 mt-1">Current status of all tables</p>
+  </div>
+  <div className="p-6">
+    {tables.length === 0 ? (
+      <p className="text-center text-gray-500 py-8">No tables configured</p>
+    ) : (
+      <>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-8">
+          {tables.map((table, index) => (
+            <div
+              key={table.id}
+              className={`p-6 rounded-xl border-2 text-center transition hover:scale-105 ${getTableColor(
+                table.status
+              )}`}
+            >
+              <p className="text-2xl font-bold text-gray-900">
+                {table.tableNumber || table.number || `Table ${index + 1}`}
+              </p>
+              <p className="text-sm text-gray-600 mt-1">
+                {table.seats || table.capacity || "?"} seats
+              </p>
+              <p className="text-xs text-gray-700 mt-2 uppercase font-medium">
+                {table.status || "UNKNOWN"}
+              </p>
+            </div>
+          ))}
+        </div>
 
-              {/* Legend - exactly as in your screenshot */}
-              <div className="flex justify-center items-center gap-8 py-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-green-500 rounded-full" />
-                  <span className="text-sm text-gray-600">Available</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-red-500 rounded-full" />
-                  <span className="text-sm text-gray-600">Occupied</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-yellow-500 rounded-full" />
-                  <span className="text-sm text-gray-600">Reserved</span>
-                </div>
-              </div>
+        <div className="flex justify-center items-center gap-8 py-4 flex-wrap">
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-green-500 rounded-full" />
+            <span className="text-sm text-gray-600">Available</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-red-500 rounded-full" />
+            <span className="text-sm text-gray-600">Occupied</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-yellow-500 rounded-full" />
+            <span className="text-sm text-gray-600">Reserved</span>
+          </div>
+        </div>
+      </>
+    )}
+  </div>
+</div>
+
+                 
+                </>
+              )}
             </div>
           </div>
         </div>
