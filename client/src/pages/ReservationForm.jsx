@@ -46,28 +46,28 @@ export default function ReservationForm({ onClose }) {
 
   if (isSuccess) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-        <div className="relative w-full max-w-md rounded-2xl bg-linear-to-br from-slate-800 to-slate-900 p-8 shadow-2xl">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 p-4 backdrop-blur-sm">
+        <div className="relative w-full max-w-md rounded-2xl bg-gradient-to-br from-muted to-background p-8 shadow-2xl">
           <button
             onClick={onClose}
-            className="absolute right-4 top-4 text-slate-400 transition-colors hover:text-white"
+            className="absolute right-4 top-4 text-muted-foreground transition-colors hover:text-foreground"
           >
             <X className="h-6 w-6" />
           </button>
 
           <div className="flex flex-col items-center text-center">
             <CheckCircle2 className="mb-4 h-16 w-16 text-green-500" />
-            <h2 className="mb-2 text-2xl font-bold text-white">Reservation Confirmed!</h2>
-            <p className="mb-6 text-slate-300">
+            <h2 className="mb-2 text-2xl font-bold text-foreground">Reservation Confirmed!</h2>
+            <p className="mb-6 text-muted-foreground">
               We've received your reservation request. You'll receive a confirmation shortly.
             </p>
 
-            <div className="w-full rounded-lg bg-slate-800/50 p-4 text-left">
-              <p className="mb-2 text-sm text-slate-400">Reservation ID</p>
+            <div className="w-full rounded-lg bg-muted/50 p-4 text-left">
+              <p className="mb-2 text-sm text-muted-foreground">Reservation ID</p>
               <p className="font-mono text-sm text-amber-500">{reservationId}</p>
             </div>
 
-            <p className="mt-4 text-xs text-slate-400">
+            <p className="mt-4 text-xs text-muted-foreground">
               This ID has been saved to your device. You can use it to manage your reservation.
             </p>
 
@@ -84,21 +84,21 @@ export default function ReservationForm({ onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-      <div className="relative w-full max-w-2xl rounded-2xl bg-linear-to-br from-slate-800 to-slate-900 p-8 shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 p-4 backdrop-blur-sm">
+      <div className="relative w-full max-w-2xl rounded-2xl bg-gradient-to-br from-muted to-background p-8 shadow-2xl">
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 text-slate-400 transition-colors hover:text-white"
+          className="absolute right-4 top-4 text-muted-foreground transition-colors hover:text-foreground"
         >
           <X className="h-6 w-6" />
         </button>
 
-        <h2 className="mb-6 text-3xl font-bold text-white">Reserve Your Table</h2>
+        <h2 className="mb-6 text-3xl font-bold text-foreground">Reserve Your Table</h2>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid gap-6 sm:grid-cols-2">
             <div>
-              <label className="mb-2 flex items-center text-sm font-medium text-slate-300">
+              <label className="mb-2 flex items-center text-sm font-medium text-muted-foreground">
                 <User className="mr-2 h-4 w-4" />
                 Full Name
               </label>
@@ -107,13 +107,13 @@ export default function ReservationForm({ onClose }) {
                 required
                 value={formData.guestName}
                 onChange={(e) => setFormData({ ...formData, guestName: e.target.value })}
-                className="w-full rounded-lg bg-slate-700/50 px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="w-full rounded-lg bg-muted/50 px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-amber-500"
                 placeholder="John Doe"
               />
             </div>
 
             <div>
-              <label className="mb-2 flex items-center text-sm font-medium text-slate-300">
+              <label className="mb-2 flex items-center text-sm font-medium text-muted-foreground">
                 <Phone className="mr-2 h-4 w-4" />
                 Phone Number
               </label>
@@ -122,28 +122,28 @@ export default function ReservationForm({ onClose }) {
                 required
                 value={formData.guestPhone}
                 onChange={(e) => setFormData({ ...formData, guestPhone: e.target.value })}
-                className="w-full rounded-lg bg-slate-700/50 px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="w-full rounded-lg bg-muted/50 px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-amber-500"
                 placeholder="+1 (555) 123-4567"
               />
             </div>
           </div>
 
           <div>
-            <label className="mb-2 flex items-center text-sm font-medium text-slate-300">
+            <label className="mb-2 flex items-center text-sm font-medium text-muted-foreground">
               Email (Optional)
             </label>
             <input
               type="email"
               value={formData.guestEmail}
               onChange={(e) => setFormData({ ...formData, guestEmail: e.target.value })}
-              className="w-full rounded-lg bg-slate-700/50 px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className="w-full rounded-lg bg-muted/50 px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-amber-500"
               placeholder="john@example.com"
             />
           </div>
 
           <div className="grid gap-6 sm:grid-cols-3">
             <div>
-              <label className="mb-2 flex items-center text-sm font-medium text-slate-300">
+              <label className="mb-2 flex items-center text-sm font-medium text-muted-foreground">
                 <Calendar className="mr-2 h-4 w-4" />
                 Date
               </label>
@@ -153,12 +153,12 @@ export default function ReservationForm({ onClose }) {
                 min={minDate}
                 value={formData.date}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                className="w-full rounded-lg bg-slate-700/50 px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="w-full rounded-lg bg-muted/50 px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
             </div>
 
             <div>
-              <label className="mb-2 flex items-center text-sm font-medium text-slate-300">
+              <label className="mb-2 flex items-center text-sm font-medium text-muted-foreground">
                 <Clock className="mr-2 h-4 w-4" />
                 Time
               </label>
@@ -167,12 +167,12 @@ export default function ReservationForm({ onClose }) {
                 required
                 value={formData.time}
                 onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                className="w-full rounded-lg bg-slate-700/50 px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="w-full rounded-lg bg-muted/50 px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
             </div>
 
             <div>
-              <label className="mb-2 flex items-center text-sm font-medium text-slate-300">
+              <label className="mb-2 flex items-center text-sm font-medium text-muted-foreground">
                 <Users className="mr-2 h-4 w-4" />
                 Guests
               </label>
@@ -180,7 +180,7 @@ export default function ReservationForm({ onClose }) {
                 required
                 value={formData.guests}
                 onChange={(e) => setFormData({ ...formData, guests: e.target.value })}
-                className="w-full rounded-lg bg-slate-700/50 px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="w-full rounded-lg bg-muted/50 px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-amber-500"
               >
                 {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
                   <option key={num} value={num}>
@@ -192,14 +192,14 @@ export default function ReservationForm({ onClose }) {
           </div>
 
           <div>
-            <label className="mb-2 flex items-center text-sm font-medium text-slate-300">
+            <label className="mb-2 flex items-center text-sm font-medium text-muted-foreground">
               Special Requests (Optional)
             </label>
             <textarea
               value={formData.specialRequests}
               onChange={(e) => setFormData({ ...formData, specialRequests: e.target.value })}
               rows={3}
-              className="w-full rounded-lg bg-slate-700/50 px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className="w-full rounded-lg bg-muted/50 px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-amber-500"
               placeholder="Dietary restrictions, allergies, special occasions..."
             />
           </div>

@@ -3,7 +3,7 @@ import { MapPin, Clock, Phone, Mail } from "lucide-react";
 
 const LocationHours = () => {
   return (
-    <section className="py-32 px-6 bg-charcoal-light">
+    <section className="py-32 px-6 bg-background">
       <div className="max-w-6xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           {/* Map / Image */}
@@ -14,27 +14,13 @@ const LocationHours = () => {
             transition={{ duration: 0.8 }}
             className="relative h-[400px] lg:h-[500px] rounded-sm overflow-hidden"
           >
-            <img
-              src="https://images.pexels.com/photos/1307698/pexels-photo-1307698.jpeg?auto=compress&cs=tinysrgb&w=800"
-              alt="Restaurant exterior at night"
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
-            
-            {/* Address Overlay */}
-            <div className="absolute bottom-0 left-0 right-0 p-8">
-              <div className="flex items-start gap-3">
-                <MapPin className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
-                <div>
-                  <p className="font-body text-lg text-foreground">
-                    245 Fifth Avenue
-                  </p>
-                  <p className="font-body text-muted-foreground">
-                    New York, NY 10016
-                  </p>
-                </div>
-              </div>
-            </div>
+            <iframe
+              className="w-full h-full"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.447!2d-73.9878!3d40.7445!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c259a3f81d489f%3A0xb4a0ecd6c4c1c0b4!2s245%205th%20Ave%2C%20New%20York%2C%20NY%2010016!5e0!3m2!1sen!2sus!4v1704567890123!5m2!1sen!2sus"
+              allowFullScreen=""
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            ></iframe>
           </motion.div>
 
           {/* Info */}
@@ -50,6 +36,17 @@ const LocationHours = () => {
             <h2 className="mt-4 font-display text-4xl md:text-5xl font-light text-foreground mb-8">
               Location & Hours
             </h2>
+            <div className="flex items-start gap-3 mb-8">
+              <MapPin className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
+              <div>
+                <p className="font-body text-lg text-foreground">
+                  245 Fifth Avenue
+                </p>
+                <p className="font-body text-muted-foreground">
+                  New York, NY 10016
+                </p>
+              </div>
+            </div>
             <div className="h-px w-16 bg-primary mb-10" />
 
             {/* Hours */}
