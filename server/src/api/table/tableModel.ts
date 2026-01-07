@@ -44,7 +44,6 @@ export const UpdateTableSchema = tableSchema.pick({
     name: true,
     seats: true,
     status: true,
-    assignedTo: true,
 });
 
 export const TableResponseSchema = tableSchema.pick({

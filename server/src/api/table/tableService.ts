@@ -132,12 +132,6 @@ export class TableService {
 
     async updateTable(tableId: string, data: UpdateTable, userId: string): Promise<ServiceResponse<TableResponse | null>> {
         try {
-            if(data.assignedTo){
-                const user = await this.userRepository.findById(data.assignedTo);
-                if(!user){
-                    return ServiceResponse.failure(`Assigned waiter ${data.assignedTo} does not exist`, null, StatusCodes.BAD_REQUEST);
-                }
-            }
             const table = await this.tableRepository.updateTable(tableId, data);
             await this.auditLogQueue.add("createAuditLog", {
                 userId,
