@@ -29,23 +29,23 @@ const reservationDate = new Date(reservation.createdAt);
 
 return (
     <div className="fixed bottom-4 right-4 z-50 w-full max-w-sm">
-        <div className="rounded-xl bg-linear-to-br from-slate-800 to-slate-900 p-6 shadow-2xl border border-amber-500/30">
+        <div className="rounded-xl bg-gradient-to-br from-muted to-background p-6 shadow-2xl border border-amber-500/30">
             <button
                 onClick={() => setIsVisible(false)}
-                className="absolute right-2 top-2 text-slate-400 transition-colors hover:text-white"
+                className="absolute right-2 top-2 text-muted-foreground transition-colors hover:text-foreground"
             >
                 <X className="h-4 w-4" />
             </button>
 
             <div className="mb-4 flex items-center gap-2">
                 <div className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
-                <p className="text-sm font-semibold text-white">Upcoming Reservation</p>
+                <p className="text-sm font-semibold text-foreground">Upcoming Reservation</p>
             </div>
 
-            <h3 className="mb-4 text-xl font-bold text-white">{reservation.guestName}</h3>
+            <h3 className="mb-4 text-xl font-bold text-foreground">{reservation.guestName}</h3>
 
             <div className="space-y-2">
-                <div className="flex items-center text-slate-300">
+                <div className="flex items-center text-muted-foreground">
                     <Calendar className="mr-2 h-4 w-4 text-amber-500" />
                     <span className="text-sm">
                         {reservationDate.toLocaleDateString('en-US', {
@@ -57,7 +57,7 @@ return (
                     </span>
                 </div>
 
-                <div className="flex items-center text-slate-300">
+                <div className="flex items-center text-muted-foreground">
                     <Clock className="mr-2 h-4 w-4 text-amber-500" />
                     <span className="text-sm">
                         {reservationDate.toLocaleTimeString('en-US', {
@@ -67,7 +67,7 @@ return (
                     </span>
                 </div>
 
-                <div className="flex items-center text-slate-300">
+                <div className="flex items-center text-muted-foreground">
                     <Users className="mr-2 h-4 w-4 text-amber-500" />
                     <span className="text-sm">{reservation.guests} Guests</span>
                 </div>

@@ -5,7 +5,13 @@ import { time } from "node:console";
 
 export class KdsEventRepository {
     async create(data: CreateKdsEvent, actorId: string, minutesSpent?: number): Promise<KdsEventResponse> {
-        return prisma.kdsEvent.create({
+    return prisma.$transaction(async (tx) => {
+        await tx.order.update({
+            where: { id: data.orderId },
+            data: { status: data.status as OrderStatus } // Ensure types match
+        });
+
+        return tx.kdsEvent.create({
             data: {
                 ...data,
                 actorId,
@@ -16,15 +22,14 @@ export class KdsEventRepository {
                 order: {
                     include: {
                         items: {
-                            include: {
-                                menuItem: true,
-                            },
+                            include: { menuItem: true },
                         },
                     },
                 },
             },
         });
-    }
+    });
+}
 
     async getLatestEventForOrder(orderId: string): Promise<KdsEventResponse | null> {
         return prisma.kdsEvent.findFirst({

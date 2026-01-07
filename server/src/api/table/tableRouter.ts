@@ -50,7 +50,7 @@ tableRegistry.registerPath({
     responses: createApiResponse(TableResponseSchema.array(), "Tables retrieved successfully", StatusCodes.OK),
 });
 
-tableRouter.get("/table", verifyJWT, tableController.getAllTables);
+tableRouter.get("/table", tableController.getAllTables);
 
 tableRegistry.registerPath({
     method: "get",
@@ -73,7 +73,7 @@ tableRegistry.registerPath({
     responses: createApiResponse(TableResponseSchema, "Table retrieved successfully", StatusCodes.OK),
 });
 
-tableRouter.get("/table/:id", verifyJWT, tableController.getTableById);
+tableRouter.get("/table/:id", tableController.getTableById);
 
 tableRegistry.registerPath({
     method: "get",

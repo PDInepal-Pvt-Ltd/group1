@@ -49,6 +49,7 @@ export class KdsEventService {
         try {
             const lastEvent = await this.kdsEventRepository.getLatestEventForOrder(data.orderId);
             let minutesSpent = 0;
+            console.log(data.status)
 console.log(lastEvent?.status)
             const validation = KdsStateMachine.validateTransition(lastEvent?.status, data.status);
             console.log(validation)
