@@ -93,7 +93,7 @@ export default function ManageStaff() {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this staff member?")) return
     try {
-      await api.delete(`/user/${id}`)
+      await API.delete(`/user/${id}`)
       toast.success("Staff member deleted")
       setStaff(staff.filter(u => u.id !== id))
     } catch (error) {

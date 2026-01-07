@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { 
-  Flame, TrendingUp, ChefHat, ArrowRight, 
-  Sparkles, Lock, ChevronRight, Menu ,
+import {
+  Flame, TrendingUp, ChefHat, ArrowRight,
+  Sparkles, Lock, ChevronRight, Menu,
   Timer, MapPin
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-
+import { ModeToggle } from '@/components/ModeToggle';
 export default function Hero({ onReserveClick, onExploreMenuClick }) {
   const [tableId, setTableId] = useState('');
   const [timeLeft, setTimeLeft] = useState(7200);
@@ -35,8 +35,8 @@ export default function Hero({ onReserveClick, onExploreMenuClick }) {
   ];
 
   return (
-    <div className="relative h-screen w-full overflow-hidden bg-slate-950 font-sans">
-      
+    <div className="relative h-screen w-full overflow-hidden bg-background font-sans">
+
       {/* 1. Refined Background: Darker overlay for better text contrast */}
       <div className="absolute inset-0 z-0">
         <video
@@ -46,7 +46,7 @@ export default function Hero({ onReserveClick, onExploreMenuClick }) {
         >
           <source src="/hero1_video.mp4" type="video/mp4" />
         </video>
-        <div className="absolute inset-0 bg-linear-to-b from-slate-950 via-slate-950/40 to-slate-950" />
+        <div className="absolute inset-0 bg-linear-to-b from-background via-background/40 to-background" />
       </div>
 
       {/* 2. Top Navigation Bar */}
@@ -55,12 +55,12 @@ export default function Hero({ onReserveClick, onExploreMenuClick }) {
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500 text-slate-950">
             <ChefHat size={24} />
           </div>
-          <span className="text-xl font-black tracking-tighter text-white">HayaRestro</span>
+          <span className="text-xl font-black tracking-tighter text-foreground">HayaRestro</span>
         </div>
 
-        <button 
-          onClick={() => window.location.href = '/login'} 
-          className="group flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-white/70 backdrop-blur-md transition-all hover:bg-white/10"
+        <button
+          onClick={() => window.location.href = '/login'}
+          className="group flex items-center gap-2 rounded-full border border-foreground/10 bg-foreground/5 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-foreground/70 backdrop-blur-md transition-all hover:bg-foreground/10"
         >
           <Lock className="h-3 w-3" />
           Staff
@@ -69,30 +69,30 @@ export default function Hero({ onReserveClick, onExploreMenuClick }) {
 
       {/* 3. Main Content Container */}
       <div className="relative z-20 flex h-full flex-col items-center justify-center px-4 text-center">
-        
+
         {/* Context-Aware Badge */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-          className="mb-8 inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 p-1 pr-4 backdrop-blur-2xl"
+          className="mb-8 inline-flex items-center gap-3 rounded-full border border-foreground/10 bg-foreground/5 p-1 pr-4 backdrop-blur-2xl"
         >
           <span className="flex h-8 items-center justify-center rounded-full bg-amber-500 px-3 text-[10px] font-black uppercase text-slate-950">
             {tableId ? `Table ${tableId}` : "Fine Dining"}
           </span>
-          <span className="text-[10px] font-bold uppercase tracking-widest text-white/80">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-foreground/80">
             {tableId ? "Direct Kitchen Link Active" : "Now Accepting Reservations"}
           </span>
         </motion.div>
 
         {/* Dynamic Heading */}
-        <h1 className="mb-6 max-w-4xl text-5xl font-black tracking-tight text-white sm:text-7xl lg:text-8xl">
+        <h1 className="mb-6 max-w-4xl text-5xl font-black tracking-tight text-foreground sm:text-7xl lg:text-8xl">
           {tableId ? "Taste the" : "Elevate Your"} <br />
-          <span className="bg-linear-to-r from-amber-200 via-amber-400 to-orange-500 bg-clip-text text-transparent">
-             {tableId ? "Moment" : "Palate"}
+          <span className="bg-gradient-to-r from-amber-200 via-amber-400 to-orange-500 bg-clip-text text-transparent">
+            {tableId ? "Moment" : "Palate"}
           </span>
         </h1>
 
-        <p className="mb-10 max-w-lg text-base text-slate-400 sm:text-lg">
-          {tableId 
+        <p className="mb-10 max-w-lg text-base text-muted-foreground sm:text-lg">
+          {tableId
             ? "Your digital menu is ready. Browse our curated collection and place your order directly to the kitchen."
             : "Where culinary artistry meets modern atmosphere. Join us for a journey through seasonal flavors and artisanal craft."
           }
@@ -111,13 +111,13 @@ export default function Hero({ onReserveClick, onExploreMenuClick }) {
             <>
               <button
                 onClick={onReserveClick}
-                className="group flex items-center gap-3 rounded-full bg-white px-10 py-5 text-lg font-black text-slate-950 transition-all hover:bg-amber-400"
+                className="group flex items-center gap-3 rounded-full bg-primary-foreground px-10 py-5 text-lg font-black text-primary transition-all hover:bg-amber-400"
               >
                 Book a Table
               </button>
               <button
                 onClick={onExploreMenuClick}
-                className="group flex items-center gap-3 rounded-full border border-white/20 bg-white/5 px-10 py-5 text-lg font-bold text-white backdrop-blur-xl transition-all hover:bg-white/10"
+                className="group flex items-center gap-3 rounded-full border border-foreground/20 bg-foreground/5 px-10 py-5 text-lg font-bold text-foreground backdrop-blur-xl transition-all hover:bg-foreground/10"
               >
                 Explore Menu
               </button>
@@ -127,21 +127,21 @@ export default function Hero({ onReserveClick, onExploreMenuClick }) {
       </div>
 
       {/* 4. Peripheral Information (Floating Elements) */}
-      
+
       {/* Flash Sale: Moved to bottom-right to avoid clashing with header */}
       <AnimatePresence>
         {timeLeft > 0 && tableId && (
-          <motion.div 
+          <motion.div
             initial={{ x: 100, opacity: 0 }} animate={{ x: 0, opacity: 1 }}
             className="absolute bottom-10 right-6 z-30 hidden lg:block"
           >
-            <div className="flex items-center gap-4 rounded-2xl border border-red-500/30 bg-black/60 p-4 backdrop-blur-2xl">
+            <div className="flex items-center gap-4 rounded-2xl border border-red-500/30 bg-background/60 p-4 backdrop-blur-2xl">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500/20 text-red-500">
                 <Timer className="animate-pulse" />
               </div>
               <div className="text-left">
                 <p className="text-[10px] font-black uppercase text-red-500">Table Special</p>
-                <p className="text-sm font-bold text-white">50% off Truffle Fries</p>
+                <p className="text-sm font-bold text-foreground">50% off Truffle Fries</p>
                 <p className="font-mono text-xs text-red-400">{formatTime(timeLeft)}</p>
               </div>
             </div>
@@ -151,17 +151,17 @@ export default function Hero({ onReserveClick, onExploreMenuClick }) {
 
       {/* Trending Indicator: Moved to bottom-left */}
       {!tableId && (
-        <div className="absolute bottom-10 left-10 hidden lg:flex items-center gap-6 border-l border-white/10 pl-6">
+        <div className="absolute bottom-10 left-10 hidden lg:flex items-center gap-6 border-l border-border pl-6">
           <div className="text-left">
             <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-amber-500">
               <TrendingUp size={12} /> Popular Now
             </p>
-            <p className="text-xl font-light text-white italic">"{trendingDishes[currentDishIndex].name}"</p>
+            <p className="text-xl font-light text-foreground italic">"{trendingDishes[currentDishIndex].name}"</p>
           </div>
-          <img 
-            src={trendingDishes[currentDishIndex].img} 
-            className="h-16 w-16 rounded-full border-2 border-amber-500/20 object-cover" 
-            alt="Trending" 
+          <img
+            src={trendingDishes[currentDishIndex].img}
+            className="h-16 w-16 rounded-full border-2 border-amber-500/20 object-cover"
+            alt="Trending"
           />
         </div>
       )}
@@ -169,11 +169,19 @@ export default function Hero({ onReserveClick, onExploreMenuClick }) {
       {/* Scroll Indicator */}
       {!tableId && (
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-30">
-          <span className="text-[9px] uppercase tracking-widest text-white">Discover</span>
-          <div className="h-8 w-px bg-linear-to-b from-white to-transparent" />
+          <span className="text-[9px] uppercase tracking-widest text-foreground">Discover</span>
+          <div className="h-8 w-px bg-gradient-to-b from-foreground to-transparent" />
         </div>
       )}
-
+      {/* Floating Theme Toggle */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.3 }}
+        className="fixed bottom-6 right-6 z-50"
+      >
+          <ModeToggle />
+      </motion.div>
     </div>
   );
 }

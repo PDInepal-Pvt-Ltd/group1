@@ -34,7 +34,7 @@ export default function MenuSection({ onOrderClick }) {
 
 //   if (loading) {
 //     return (
-//       <section id="menu" className="bg-slate-900 px-4 py-20">
+//       <section id="menu" className="bg-background px-4 py-20">
 //         <div className="mx-auto max-w-7xl text-center">
 //           <div className="h-12 w-12 animate-spin rounded-full border-4 border-amber-500 border-t-transparent mx-auto" />
 //         </div>
@@ -43,14 +43,14 @@ export default function MenuSection({ onOrderClick }) {
 //   }
 
   return (
-    <section id="menu" className="bg-slate-900 px-4 py-20">
+    <section id="menu" className="bg-background px-4 py-20">
       <div className="mx-auto max-w-7xl">
         {/* Header */}
         <div className="mb-12 text-center">
-          <h2 className="mb-4 text-4xl font-bold text-white sm:text-5xl">
+          <h2 className="mb-4 text-4xl font-bold text-foreground sm:text-5xl">
             Explore Our <span className="text-amber-500">Menu</span>
           </h2>
-          <p className="text-lg text-slate-400">
+          <p className="text-lg text-muted-foreground">
             Handcrafted dishes made with the finest ingredients
           </p>
         </div>
@@ -59,7 +59,7 @@ export default function MenuSection({ onOrderClick }) {
         {featuredItems.length > 0 && (
           <div className="mb-16">
             <div className="mb-6 flex items-center gap-2">
-              <h3 className="text-2xl font-bold text-white">Featured Deals</h3>
+              <h3 className="text-2xl font-bold text-foreground">Featured Deals</h3>
               <span className="rounded-full bg-red-500/10 px-3 py-1 text-xs font-medium text-red-500 animate-pulse">
                 Limited Time
               </span>
@@ -72,7 +72,7 @@ export default function MenuSection({ onOrderClick }) {
           </div>
         )}
 
-        <hr className="mb-12 border-slate-800" />
+        <hr className="mb-12 border-border" />
 
         {/* Controls: Categories & Veg Toggle */}
         <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
@@ -82,7 +82,7 @@ export default function MenuSection({ onOrderClick }) {
               className={`rounded-full px-6 py-2.5 font-semibold transition-all ${
                 selectedCategory === null
                   ? 'bg-amber-500 text-slate-900'
-                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
               }`}
             >
               All
@@ -94,7 +94,7 @@ export default function MenuSection({ onOrderClick }) {
                 className={`rounded-full px-6 py-2.5 font-semibold transition-all ${
                   selectedCategory === category.id
                     ? 'bg-amber-500 text-slate-900'
-                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
                 }`}
               >
                 {category.name}
@@ -108,7 +108,7 @@ export default function MenuSection({ onOrderClick }) {
             className={`flex items-center gap-2 rounded-lg border px-4 py-2 transition-all ${
               isVegOnly 
                 ? 'border-green-500 bg-green-500/10 text-green-500' 
-                : 'border-slate-700 text-slate-400 hover:border-slate-500'
+                : 'border-border text-muted-foreground hover:border-border'
             }`}
           >
             <Leaf size={18} />
@@ -125,8 +125,8 @@ export default function MenuSection({ onOrderClick }) {
 
         {/* Empty State */}
         {filteredItems.length === 0 && (
-          <div className="rounded-xl bg-slate-800/50 p-20 text-center">
-            <p className="text-xl text-slate-400">No dishes found matching your selection.</p>
+          <div className="rounded-xl bg-muted/50 p-20 text-center">
+            <p className="text-xl text-muted-foreground">No dishes found matching your selection.</p>
             <button 
               onClick={() => {setSelectedCategory(null); setIsVegOnly(false);}}
               className="mt-4 text-amber-500 hover:underline"
@@ -153,9 +153,9 @@ function MenuItemCard({
     : originalPrice.toFixed(2);
 
   return (
-    <div className="group flex flex-col overflow-hidden rounded-xl bg-slate-800 transition-all hover:shadow-2xl hover:shadow-amber-500/10">
+    <div className="group flex flex-col overflow-hidden rounded-xl bg-card transition-all hover:shadow-2xl hover:shadow-amber-500/10">
       {/* Image Container */}
-      <div className="relative h-52 overflow-hidden bg-slate-700">
+      <div className="relative h-52 overflow-hidden bg-muted">
         {item.imageUrl ? (
           <img
             src={item.imageUrl}
@@ -186,18 +186,18 @@ function MenuItemCard({
       {/* Content */}
       <div className="flex flex-1 flex-col p-6">
         <div className="mb-2 flex items-start justify-between gap-2">
-          <h3 className="text-lg font-bold text-white group-hover:text-amber-500 transition-colors">
+          <h3 className="text-lg font-bold text-card-foreground group-hover:text-amber-500 transition-colors">
             {item.name}
           </h3>
           <div className="flex flex-col items-end">
             <span className="text-lg font-bold text-amber-500">${finalPrice}</span>
             {hasSurplus && (
-              <span className="text-xs text-slate-500 line-through">${originalPrice.toFixed(2)}</span>
+              <span className="text-xs text-muted-foreground line-through">${originalPrice.toFixed(2)}</span>
             )}
           </div>
         </div>
 
-        <p className="mb-4 line-clamp-2 text-sm text-slate-400">
+        <p className="mb-4 line-clamp-2 text-sm text-muted-foreground">
           {item.description || "No description available for this item."}
         </p>
 
@@ -214,8 +214,8 @@ function MenuItemCard({
           </div>
         )}
 
-        <div className="mt-auto flex items-center justify-between border-t border-slate-700/50 pt-4">
-          <div className="flex items-center text-xs font-medium text-slate-500">
+        <div className="mt-auto flex items-center justify-between border-t border-border pt-4">
+          <div className="flex items-center text-xs font-medium text-muted-foreground">
             <Clock className="mr-1.5 h-3.5 w-3.5" />
             15-20 min
           </div>

@@ -45,13 +45,13 @@ export default function Gallery() {
   };
 
   return (
-    <section className="relative bg-slate-950 px-4 py-20">
+    <section className="relative bg-background px-4 py-20">
       <div className="mx-auto max-w-7xl">
         <div className="mb-12 text-center">
-          <h2 className="mb-4 text-4xl font-bold text-white sm:text-5xl">
+          <h2 className="mb-4 text-4xl font-bold text-foreground sm:text-5xl">
             Experience the <span className="text-amber-500">Atmosphere</span>
           </h2>
-          <p className="text-lg text-slate-400">
+          <p className="text-lg text-muted-foreground">
             Step inside and discover our elegant spaces
           </p>
         </div>
@@ -59,7 +59,7 @@ export default function Gallery() {
         <div className="relative">
           <button
             onClick={() => scroll('left')}
-            className="absolute left-0 top-1/2 z-10 -translate-y-1/2 rounded-full bg-slate-800/90 p-3 text-white backdrop-blur-sm transition-all hover:bg-slate-700 hover:scale-110"
+            className="absolute left-0 top-1/2 z-10 -translate-y-1/2 rounded-full bg-background/90 p-3 text-foreground backdrop-blur-sm transition-all hover:bg-muted hover:scale-110"
             aria-label="Scroll left"
           >
             <ChevronLeft className="h-6 w-6" />
@@ -67,7 +67,7 @@ export default function Gallery() {
 
           <button
             onClick={() => scroll('right')}
-            className="absolute right-0 top-1/2 z-10 -translate-y-1/2 rounded-full bg-slate-800/90 p-3 text-white backdrop-blur-sm transition-all hover:bg-slate-700 hover:scale-110"
+            className="absolute right-0 top-1/2 z-10 -translate-y-1/2 rounded-full bg-background/90 p-3 text-foreground backdrop-blur-sm transition-all hover:bg-muted hover:scale-110"
             aria-label="Scroll right"
           >
             <ChevronRight className="h-6 w-6" />
@@ -92,9 +92,9 @@ export default function Gallery() {
                   alt={image.caption}
                   className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
-                <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-6">
-                  <h3 className="text-2xl font-bold text-white">{image.caption}</h3>
+                  <h3 className="text-2xl font-bold text-foreground">{image.caption}</h3>
                 </div>
               </div>
             ))}
@@ -102,7 +102,7 @@ export default function Gallery() {
         </div>
 
         <div className="mt-8 text-center">
-          <p className="text-sm text-slate-500">Scroll to explore more</p>
+          <p className="text-sm text-muted-foreground">Scroll to explore more</p>
         </div>
       </div>
     </section>

@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { useSelector, useDispatch } from "react-redux"
 import { Label } from "@/components/ui/label"
-import { Receipt, CreditCard, Banknote, DollarSign, FileText, Check, Download } from "lucide-react"
+import { Receipt, CreditCard, Banknote, DollarSign, FileText, Check, Download, Eye } from "lucide-react"
 import {
     Dialog,
     DialogContent,
@@ -26,9 +26,9 @@ export default function BillsPage() {
     const { bills } = useSelector((state) => state.bill)
     const { tables } = useSelector((state) => state.table)
     const { items: menuItems } = useSelector((state) => state.menuItem)
-
     const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false)
     const [selectedOrder, setSelectedOrder] = useState("")
+    const [selectedPdf, setSelectedPdf] = useState(null)
     const [billDetails, setBillDetails] = useState({
         discountValue: 0,
         discountType: "PERCENTAGE",
@@ -36,40 +36,39 @@ export default function BillsPage() {
         taxPct: 13,
         paymentMode: "CASH",
     })
+    const unbilledOrders = orders.filter((o) => !bills.find((b) => b.orderId === o.id) && o.status === "SERVED")
 
-    const unbilledOrders = orders.filter((o) => !bills.find((b) => b.orderId === o.id) && o.status === "READY")
+    useEffect(() => {
+        dispatch(fetchBills())
+        dispatch(fetchOrders())
+        const interval = setInterval(() => {
+            if (document.visibilityState === "visible") {
+                dispatch(fetchBills())
+                dispatch(fetchOrders())
+            }
+        }, 30000)
 
-  useEffect(() => {
-      dispatch(fetchBills())
-      dispatch(fetchOrders())
-      const interval = setInterval(() => {
-        if (document.visibilityState === "visible") {
-          dispatch(fetchBills())
-          dispatch(fetchOrders())
-        }
-      }, 30000)
-  
-      return () => clearInterval(interval)
+        return () => clearInterval(interval)
     }, [dispatch])
+
     const generateBill = () => {
         if (!selectedOrder) {
             toast.error("Please select an order")
             return
         }
-
         const order = orders.find((o) => o.id === selectedOrder)
         if (!order) {
             toast.error("Order not found")
             return
         }
-
         const newBill = {
             orderId: selectedOrder,
             discountValue: billDetails.discountValue,
             discountType: billDetails.discountType,
+            serviceCharge: billDetails.serviceCharge,
+            taxPct: billDetails.taxPct,
             paymentMode: billDetails.paymentMode,
         }
-
         dispatch(createBill(newBill))
         setIsGenerateDialogOpen(false)
         setSelectedOrder("")
@@ -79,6 +78,15 @@ export default function BillsPage() {
     const markAsPaid = (billId) => {
         dispatch(payBill(billId))
         toast.success("Bill has been marked as paid")
+    }
+
+    const handleDownload = (pdfUrl, billId) => {
+        const link = document.createElement('a')
+        link.href = pdfUrl
+        link.download = `bill_${billId}.pdf`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
     }
 
     const totalRevenue = bills.filter((b) => b.isPaid).reduce((sum, b) => sum + Number(b.grandTotal), 0)
@@ -118,14 +126,13 @@ export default function BillsPage() {
                                                     const table = tables.find((t) => t.id === order.tableId)
                                                     return (
                                                         <SelectItem key={order.id} value={order.id}>
-                                                            {table?.name} - {order.placedBy}
+                                                            {table?.name} - {order.placedBy || 'QR Order'}
                                                         </SelectItem>
                                                     )
                                                 })}
                                             </SelectContent>
                                         </Select>
                                     </div>
-
                                     {selectedOrder && (
                                         <Card className="bg-muted/50">
                                             <CardHeader>
@@ -140,10 +147,10 @@ export default function BillsPage() {
                                                             return (
                                                                 <div key={item.id} className="flex justify-between text-sm">
                                                                     <span className="text-foreground">
-                                                                        {item.qty}x {menuItem?.name} {/* item.qty -> item.quantity */}
+                                                                        {item.qty}x {menuItem?.name}
                                                                     </span>
                                                                     <span className="font-medium text-foreground">
-                                                                        ${(item.qty * item.unitPrice).toFixed(2)} {/* item.subTotal -> calculation */}
+                                                                        ${(item.qty * item.unitPrice).toFixed(2)}
                                                                     </span>
                                                                 </div>
                                                             )
@@ -152,7 +159,6 @@ export default function BillsPage() {
                                             </CardContent>
                                         </Card>
                                     )}
-
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label>Discount Type</Label>
@@ -181,7 +187,6 @@ export default function BillsPage() {
                                             />
                                         </div>
                                     </div>
-
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label>Service Charge ($)</Label>
@@ -208,7 +213,6 @@ export default function BillsPage() {
                                             />
                                         </div>
                                     </div>
-
                                     <div className="space-y-2">
                                         <Label>Payment Mode</Label>
                                         <Select
@@ -235,7 +239,6 @@ export default function BillsPage() {
                             </DialogContent>
                         </Dialog>
                     </div>
-
                     <div className="grid gap-4 md:grid-cols-3 mb-8">
                         <Card>
                             <CardContent className="pt-6">
@@ -271,7 +274,6 @@ export default function BillsPage() {
                             </CardContent>
                         </Card>
                     </div>
-
                     <Card>
                         <CardHeader>
                             <CardTitle>All Bills</CardTitle>
@@ -293,10 +295,10 @@ export default function BillsPage() {
                                                 </div>
                                                 <div>
                                                     <p className="font-semibold text-foreground">
-                                                        {table?.name} - {order?.placedBy}
+                                                        {table?.name} - {order?.placedBy || 'QR Order'}
                                                     </p>
                                                     <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
-                                                        <span>Bill #{bill.id}</span>
+                                                        <span>Bill #{bill.id.slice(0, 8)}...</span>
                                                         <span>{new Date(bill.generatedAt).toLocaleString()}</span>
                                                         <span className="flex items-center gap-1">
                                                             {bill.paymentMode === "CASH" ? (
@@ -311,9 +313,9 @@ export default function BillsPage() {
                                             </div>
                                             <div className="flex items-center gap-4">
                                                 <div className="text-right">
-                                                    <p className="text-2xl font-bold text-foreground">${bill.grandTotal.toFixed(2)}</p>
+                                                    <p className="text-2xl font-bold text-foreground">${bill.grandTotal}</p>
                                                     <p className="text-xs text-muted-foreground">
-                                                        Subtotal: ${bill.subTotal.toFixed(2)} • Tax: ${bill.taxAmount.toFixed(2)}
+                                                        Subtotal: ${bill.subTotal} • Tax: ${bill.taxAmount}
                                                     </p>
                                                 </div>
                                                 {bill.isPaid ? (
@@ -327,7 +329,18 @@ export default function BillsPage() {
                                                             <Check className="h-4 w-4 mr-2" />
                                                             Mark Paid
                                                         </Button>
-                                                        <Button size="sm" variant="outline">
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            onClick={() => setSelectedPdf(bill.pdfUrl)}
+                                                        >
+                                                            <Eye className="h-4 w-4" />
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            onClick={() => handleDownload(bill.pdfUrl, bill.id)}
+                                                        >
                                                             <Download className="h-4 w-4" />
                                                         </Button>
                                                     </div>
@@ -341,6 +354,11 @@ export default function BillsPage() {
                     </Card>
                 </div>
             </div>
+            <Dialog open={!!selectedPdf} onOpenChange={() => setSelectedPdf(null)}>
+                <DialogContent className="max-w-4xl h-[80vh] p-0">
+                    <iframe src={selectedPdf} className="w-full h-full border-0" title="Bill PDF Preview" />
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

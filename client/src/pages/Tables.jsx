@@ -14,7 +14,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { fetchTables, fetchTable, assignWaiter } from "@/store/tableSlice"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { fetchTables, fetchTable, assignWaiter, updateTableStatus, createTable, updateTable, deleteTable } from "@/store/tableSlice"
 import { useDispatch, useSelector } from "react-redux"
 
 export default function TablesPage() {
@@ -22,25 +24,38 @@ export default function TablesPage() {
   const { tables } = useSelector((state) => state.table)
   const [qrDialogOpen, setQrDialogOpen] = useState(false)
   const [qrTableId, setQrTableId] = useState("")
-
+  const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [newName, setNewName] = useState("")
+  const [newSeats, setNewSeats] = useState("")
 
   useEffect(() => {
-      dispatch(fetchTables())
-      const interval = setInterval(() => {
-        if (document.visibilityState === "visible") {
-          dispatch(fetchTables())
-        }
-      }, 30000)
-  
-      return () => clearInterval(interval)
-    }, [dispatch])
+    dispatch(fetchTables())
+    const interval = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        dispatch(fetchTables())
+      }
+    }, 30000)
+
+    return () => clearInterval(interval)
+  }, [dispatch])
+
+  const handleCreateTable = () => {
+    if (!newName || !newSeats || isNaN(parseInt(newSeats))) {
+      alert("Please enter valid name and seats")
+      return
+    }
+    dispatch(createTable({ name: newName, seats: parseInt(newSeats) }))
+    setCreateDialogOpen(false)
+    setNewName("")
+    setNewSeats("")
+  }
 
   const handleUpdateTableStatus = (tableId, status) => {
     dispatch(updateTableStatus({ id: tableId, status }))
     dispatch(fetchTables())
   };
 
- const handleAssignWaiter = (tableId, waiterId) => {
+  const handleAssignWaiter = (tableId, waiterId) => {
     dispatch(assignWaiter({ id: tableId, userId: waiterId }))
     dispatch(fetchTables())
   };
@@ -157,6 +172,10 @@ export default function TablesPage() {
             </Card>
           </div>
 
+          <div className="mb-4">
+            <Button onClick={() => setCreateDialogOpen(true)}>Create New Table</Button>
+          </div>
+
           <Card>
             <CardHeader>
               <CardTitle>All Tables</CardTitle>
@@ -166,6 +185,23 @@ export default function TablesPage() {
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 {tables.map((table) => {
                   const assignedWaiter = waiters.find((w) => w.id === table.assignedTo)
+                  const [editedName, setEditedName] = useState(table.name)
+                  const [editedSeats, setEditedSeats] = useState(table.seats.toString())
+
+                  const handleUpdateTable = () => {
+                    if (!editedName || !editedSeats || isNaN(parseInt(editedSeats))) {
+                      alert("Please enter valid name and seats")
+                      return
+                    }
+                    dispatch(updateTable({ id: table.id, data: { name: editedName, seats: parseInt(editedSeats) } }))
+                  }
+
+                  const handleDeleteTable = () => {
+                    if (confirm("Are you sure you want to delete this table?")) {
+                      dispatch(deleteTable(table.id))
+                    }
+                  }
+
                   return (
                     <Dialog key={table.id}>
                       <DialogTrigger asChild>
@@ -191,9 +227,25 @@ export default function TablesPage() {
                         </DialogHeader>
                         <div className="space-y-6 py-4">
                           <div className="space-y-2">
-                            <label className="text-sm font-medium">Capacity</label>
-                            <p className="text-2xl font-bold text-foreground">{table.seats} seats</p>
+                            <Label htmlFor="name">Table Name</Label>
+                            <Input
+                              id="name"
+                              value={editedName}
+                              onChange={(e) => setEditedName(e.target.value)}
+                            />
                           </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="seats">Capacity (seats)</Label>
+                            <Input
+                              id="seats"
+                              type="number"
+                              value={editedSeats}
+                              onChange={(e) => setEditedSeats(e.target.value)}
+                            />
+                          </div>
+
+                          <Button onClick={handleUpdateTable}>Save Changes</Button>
 
                           <div className="space-y-2">
                             <label className="text-sm font-medium">Current Status</label>
@@ -246,6 +298,8 @@ export default function TablesPage() {
                               </Button>
                             </div>
                           </div>
+
+                          <Button variant="destructive" onClick={handleDeleteTable}>Delete Table</Button>
                         </div>
                       </DialogContent>
                     </Dialog>
@@ -278,6 +332,37 @@ export default function TablesPage() {
               <ExternalLink className="mr-2 h-4 w-4" />
               Copy Dashboard Link
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create New Table</DialogTitle>
+            <DialogDescription>Enter table details</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="new-name">Table Name</Label>
+              <Input
+                id="new-name"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="new-seats">Capacity (seats)</Label>
+              <Input
+                id="new-seats"
+                type="number"
+                value={newSeats}
+                onChange={(e) => setNewSeats(e.target.value)}
+              />
+            </div>
+
+            <Button onClick={handleCreateTable}>Create Table</Button>
           </div>
         </DialogContent>
       </Dialog>

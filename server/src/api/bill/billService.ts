@@ -65,7 +65,7 @@ export class BillService {
                 userAgent: null,
             });
 
-            return ServiceResponse.success<BillResponse>("Bill created successfully", bill, StatusCodes.CREATED);
+            return ServiceResponse.success<BillResponse>("Bill created successfully", updatedBill, StatusCodes.CREATED);
 
         } catch (error) {
             logger.error("Error creating Bill:", error);
@@ -84,20 +84,20 @@ export class BillService {
         return ServiceResponse.success("Bills retrieved", bills);
     }
 
-    async confirmPayment(billId: string, paymentMode: PaymentMode, userId: string): Promise<ServiceResponse<BillResponse | null>> {
+    async confirmPayment(billId: string, userId: string): Promise<ServiceResponse<BillResponse | null>> {
         try {
             const bill = await this.billRepository.findById(billId);
             if (!bill) return ServiceResponse.failure("Bill not found", null, StatusCodes.NOT_FOUND);
             if (bill.isPaid) return ServiceResponse.failure("Bill is already paid", null, StatusCodes.BAD_REQUEST);
 
-            const updatedBill = await this.billRepository.markAsPaid(billId, paymentMode);
+            const updatedBill = await this.billRepository.markAsPaid(billId);
 
             await this.auditLogQueue.add("createAuditLog", {
                 userId,
                 action: BILL_AUDIT_ACTIONS.BILL_PAID,
                 resourceType: "Bill",
                 resourceId: billId,
-                payload: { paymentMode }
+                payload: { isPaid: true },
             });
 
             return ServiceResponse.success("Payment confirmed", updatedBill);

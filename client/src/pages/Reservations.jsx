@@ -89,15 +89,17 @@ export default function ReservationsPage() {
   }
 
   const formatDateTime = (date) => {
+    const d = new Date(date)
     return new Intl.DateTimeFormat("en-US", {
       dateStyle: "medium",
       timeStyle: "short",
-    }).format(date)
+    }).format(d)
   }
   const activeReservations = reservations.filter((r) => r.status === "ACTIVE")
   const upcomingToday = activeReservations.filter((r) => {
     const today = new Date()
-    return r.reservedAt.toDateString() === today.toDateString()
+    const reservedDate = new Date(r.reservedAt)
+    return reservedDate.toDateString() === today.toDateString()
   })
 
   return (
@@ -258,7 +260,7 @@ export default function ReservationsPage() {
             <CardContent>
               <div className="space-y-4">
                 {reservations.map((reservation) => {
-                  const table = mockTables.find((t) => t.id === reservation.tableId)
+                  const table = tables.find((t) => t.id === reservation.tableId)
                   return (
                     <div
                       key={reservation.id}

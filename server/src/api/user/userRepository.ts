@@ -117,7 +117,8 @@ export class UserRepository {
         return prisma.user.update({
             where: { id: userId },
             data: {
-                deletedAt: new Date()
+                deletedAt: new Date(),
+                isActive: false
             },
             select: {
                 email: true,

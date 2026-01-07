@@ -59,11 +59,11 @@ export default function KitchenPage() {
 
     const queueInterval = setInterval(() => {
       dispatch(fetchKdsQueue());
-    }, 10000); // Refresh queue every 10 seconds
+    }, 100000); // Refresh queue every 10 seconds
 
     const performanceInterval = setInterval(() => {
       dispatch(fetchKdsPerformance());
-    }, 30000); // Refresh performance every 30 seconds
+    }, 300000); // Refresh performance every 30 seconds
 
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
 
@@ -171,7 +171,7 @@ export default function KitchenPage() {
   }
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-background to-muted/50">
+    <div className="flex h-screen bg-linear-to-br from-background to-muted/50">
       {/* Sidebar */}
       <Sidebar />
       {/* Main Content */}
