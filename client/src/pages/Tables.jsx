@@ -3,7 +3,6 @@ import { Sidebar } from "@/components/Sidebar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { mockUsers } from "@/lib/mock-data"
 import { Users, Clock, Sparkles, AlertCircle, QrCode, ExternalLink } from "lucide-react"
 import {
   Dialog,
@@ -18,6 +17,143 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { fetchTables, fetchTable, assignWaiter, updateTableStatus, createTable, updateTable, deleteTable } from "@/store/tableSlice"
 import { useDispatch, useSelector } from "react-redux"
+import { API } from "@/api/axios"
+import toast from "react-hot-toast"
+
+function TableItem({ table, waiters, getStatusColor, getStatusIcon, showQRCode, copyUrl }) {
+  const dispatch = useDispatch()
+  const assignedWaiter = waiters.find((w) => w.id === table.assignedTo)
+  const [editedName, setEditedName] = useState(table.name)
+  const [editedSeats, setEditedSeats] = useState(table.seats.toString())
+
+  const handleUpdateTableStatus = (status) => {
+    dispatch(updateTableStatus({ id: table.id, status }))
+    dispatch(fetchTables())
+  };
+
+  const handleAssignWaiter = (waiterId) => {
+    dispatch(assignWaiter({ id: table.id, waiterId: waiterId }))
+    dispatch(fetchTables())
+  };
+
+  const handleUpdateTable = () => {
+    const seatsNum = parseInt(editedSeats)
+    if (!editedName || !editedSeats || isNaN(seatsNum)) {
+      alert("Please enter valid name and seats")
+      return
+    }
+    dispatch(updateTable({ id: table.id, data: { name: editedName, seats: seatsNum } }))
+  }
+
+  const handleDeleteTable = () => {
+    if (confirm("Are you sure you want to delete this table?")) {
+      dispatch(deleteTable(table.id))
+    }
+  }
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <button
+          className={`relative p-6 rounded-lg border-2 transition-all hover:scale-105 ${getStatusColor(table.status)}`}
+        >
+          <div className="flex flex-col items-center gap-2">
+            {getStatusIcon(table.status)}
+            <span className="text-xl font-bold">{table.name}</span>
+            <span className="text-sm">{table.seats} seats</span>
+            {assignedWaiter && (
+              <Badge variant="secondary" className="text-xs mt-2">
+                {assignedWaiter.name.split(" ")[0]}
+              </Badge>
+            )}
+          </div>
+        </button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{table.name}</DialogTitle>
+          <DialogDescription>Manage table status and assignments</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-6 py-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Table Name</Label>
+            <Input
+              id="name"
+              value={editedName}
+              onChange={(e) => setEditedName(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="seats">Capacity (seats)</Label>
+            <Input
+              id="seats"
+              type="number"
+              value={editedSeats}
+              onChange={(e) => setEditedSeats(e.target.value)}
+            />
+          </div>
+
+          <Button onClick={handleUpdateTable}>Save Changes</Button>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Current Status</label>
+            <div className="grid grid-cols-2 gap-2">
+              {(["AVAILABLE", "OCCUPIED", "RESERVED", "NEEDS_CLEANING"]).map(
+                (status) => (
+                  <Button
+                    key={status}
+                    variant={table.status === status ? "default" : "outline"}
+                    onClick={() => handleUpdateTableStatus(status)}
+                    className="justify-start"
+                  >
+                    {status.replace("_", " ")}
+                  </Button>
+                ),
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Assign Waiter</label>
+            <Select
+              value={table.assignedTo || ""}
+              onValueChange={(value) => handleAssignWaiter(value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a waiter" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Unassigned</SelectItem>
+                {waiters.map((waiter) => (
+                  <SelectItem key={waiter.id} value={waiter.id}>
+                    {waiter.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2 pt-4 border-t">
+            <label className="text-sm font-medium">Customer Ordering</label>
+            <div className="flex gap-2">
+              <Button onClick={() => showQRCode(table.id)} className="flex-1" variant="outline">
+                <QrCode className="mr-2 h-4 w-4" />
+                Show QR Code
+              </Button>
+              <Button onClick={() => copyUrl(table.id)} className="flex-1" variant="outline">
+                <ExternalLink className="mr-2 h-4 w-4" />
+                Copy Link
+              </Button>
+            </div>
+          </div>
+
+          <Button variant="destructive" onClick={handleDeleteTable}>Delete Table</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
 
 export default function TablesPage() {
   const dispatch = useDispatch()
@@ -27,7 +163,18 @@ export default function TablesPage() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [newName, setNewName] = useState("")
   const [newSeats, setNewSeats] = useState("")
-
+  const [users, setUsers] = useState([])
+  const fetchUsers = async () => {
+    try {
+      const response = await API.get("/user")
+      setUsers(response.data.data)
+    } catch (error) {
+      toast.error("Could not fetch User list")
+    }
+  }
+  useEffect(() => {
+    fetchUsers()
+  }, [])
   useEffect(() => {
     dispatch(fetchTables())
     const interval = setInterval(() => {
@@ -40,25 +187,16 @@ export default function TablesPage() {
   }, [dispatch])
 
   const handleCreateTable = () => {
-    if (!newName || !newSeats || isNaN(parseInt(newSeats))) {
+    const seatsNum = parseInt(newSeats)
+    if (!newName || !newSeats || isNaN(seatsNum)) {
       alert("Please enter valid name and seats")
       return
     }
-    dispatch(createTable({ name: newName, seats: parseInt(newSeats) }))
+    dispatch(createTable({ name: newName, seats: seatsNum }))
     setCreateDialogOpen(false)
     setNewName("")
     setNewSeats("")
   }
-
-  const handleUpdateTableStatus = (tableId, status) => {
-    dispatch(updateTableStatus({ id: tableId, status }))
-    dispatch(fetchTables())
-  };
-
-  const handleAssignWaiter = (tableId, waiterId) => {
-    dispatch(assignWaiter({ id: tableId, userId: waiterId }))
-    dispatch(fetchTables())
-  };
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -87,9 +225,7 @@ export default function TablesPage() {
         return <AlertCircle className="h-5 w-5" />
     }
   }
-
-  const waiters = mockUsers.filter((u) => u.role === "WAITER")
-
+  const waiters = users.filter((u) => u.role === "WAITER")
   const statusCounts = {
     AVAILABLE: tables.filter((t) => t.status === "AVAILABLE").length,
     OCCUPIED: tables.filter((t) => t.status === "OCCUPIED").length,
@@ -99,7 +235,7 @@ export default function TablesPage() {
 
   const getCustomerUrl = (tableId) => {
     if (typeof window !== "undefined") {
-      return `${window.location.origin}/customer/${tableId}`
+      return `${window.location.origin}?tableId=${tableId}`
     }
     return ""
   }
@@ -183,128 +319,17 @@ export default function TablesPage() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                {tables.map((table) => {
-                  const assignedWaiter = waiters.find((w) => w.id === table.assignedTo)
-                  const [editedName, setEditedName] = useState(table.name)
-                  const [editedSeats, setEditedSeats] = useState(table.seats.toString())
-
-                  const handleUpdateTable = () => {
-                    if (!editedName || !editedSeats || isNaN(parseInt(editedSeats))) {
-                      alert("Please enter valid name and seats")
-                      return
-                    }
-                    dispatch(updateTable({ id: table.id, data: { name: editedName, seats: parseInt(editedSeats) } }))
-                  }
-
-                  const handleDeleteTable = () => {
-                    if (confirm("Are you sure you want to delete this table?")) {
-                      dispatch(deleteTable(table.id))
-                    }
-                  }
-
-                  return (
-                    <Dialog key={table.id}>
-                      <DialogTrigger asChild>
-                        <button
-                          className={`relative p-6 rounded-lg border-2 transition-all hover:scale-105 ${getStatusColor(table.status)}`}
-                        >
-                          <div className="flex flex-col items-center gap-2">
-                            {getStatusIcon(table.status)}
-                            <span className="text-xl font-bold">{table.name}</span>
-                            <span className="text-sm">{table.seats} seats</span>
-                            {assignedWaiter && (
-                              <Badge variant="secondary" className="text-xs mt-2">
-                                {assignedWaiter.name.split(" ")[0]}
-                              </Badge>
-                            )}
-                          </div>
-                        </button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>{table.name}</DialogTitle>
-                          <DialogDescription>Manage table status and assignments</DialogDescription>
-                        </DialogHeader>
-                        <div className="space-y-6 py-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="name">Table Name</Label>
-                            <Input
-                              id="name"
-                              value={editedName}
-                              onChange={(e) => setEditedName(e.target.value)}
-                            />
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label htmlFor="seats">Capacity (seats)</Label>
-                            <Input
-                              id="seats"
-                              type="number"
-                              value={editedSeats}
-                              onChange={(e) => setEditedSeats(e.target.value)}
-                            />
-                          </div>
-
-                          <Button onClick={handleUpdateTable}>Save Changes</Button>
-
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium">Current Status</label>
-                            <div className="grid grid-cols-2 gap-2">
-                              {(["AVAILABLE", "OCCUPIED", "RESERVED", "NEEDS_CLEANING"]).map(
-                                (status) => (
-                                  <Button
-                                    key={status}
-                                    variant={table.status === status ? "default" : "outline"}
-                                    onClick={() => handleUpdateTableStatus(table.id, status)}
-                                    className="justify-start"
-                                  >
-                                    {status.replace("_", " ")}
-                                  </Button>
-                                ),
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium">Assign Waiter</label>
-                            <Select
-                              value={table.assignedTo || ""}
-                              onValueChange={(value) => handleAssignWaiter(table.id, value)}
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select a waiter" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="none">Unassigned</SelectItem>
-                                {waiters.map((waiter) => (
-                                  <SelectItem key={waiter.id} value={waiter.id}>
-                                    {waiter.name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          <div className="space-y-2 pt-4 border-t">
-                            <label className="text-sm font-medium">Customer Ordering</label>
-                            <div className="flex gap-2">
-                              <Button onClick={() => showQRCode(table.id)} className="flex-1" variant="outline">
-                                <QrCode className="mr-2 h-4 w-4" />
-                                Show QR Code
-                              </Button>
-                              <Button onClick={() => copyUrl(table.id)} className="flex-1" variant="outline">
-                                <ExternalLink className="mr-2 h-4 w-4" />
-                                Copy Link
-                              </Button>
-                            </div>
-                          </div>
-
-                          <Button variant="destructive" onClick={handleDeleteTable}>Delete Table</Button>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                  )
-                })}
+                {tables.map((table) => (
+                  <TableItem
+                    key={table.id}
+                    table={table}
+                    waiters={waiters}
+                    getStatusColor={getStatusColor}
+                    getStatusIcon={getStatusIcon}
+                    showQRCode={showQRCode}
+                    copyUrl={copyUrl}
+                  />
+                ))}
               </div>
             </CardContent>
           </Card>

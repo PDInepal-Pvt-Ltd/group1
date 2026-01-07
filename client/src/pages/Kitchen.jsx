@@ -80,7 +80,6 @@ export default function KitchenPage() {
       dispatch(fetchOrderTimeline(selectedOrderId));
     }
   }, [selectedOrderId, dispatch]);
-
   const getTimeElapsed = (orderTimeStr) => {
     const orderTime = new Date(orderTimeStr);
     if (isNaN(orderTime.getTime())) {
@@ -94,6 +93,7 @@ export default function KitchenPage() {
   const pendingOrders = activeOrders.filter((o) => o.status === "PENDING");
   const preparingOrders = activeOrders.filter((o) => o.status === "PREPARING");
   const readyOrders = activeOrders.filter((o) => o.status === "READY");
+console.log(preparingOrders,'preparing orders')
 
   const openStatusChangeModal = (order, status) => {
     if (!statusTransitions[order.status].includes(status)) {

@@ -67,9 +67,9 @@ export const updateTable = createAsyncThunk(
 
 export const assignWaiter = createAsyncThunk(
   "table/assign",
-  async ({ id, userId }, { rejectWithValue }) => {
+  async ({ id, waiterId }, { rejectWithValue }) => {
     try {
-      const response = await api.patch(`/table/assign/${id}`, { userId });
+      const response = await api.patch(`/table/assign/${id}`, { waiterId });
       toast.success("Waiter assigned");
       return response.data.data;
     } catch (error) {
