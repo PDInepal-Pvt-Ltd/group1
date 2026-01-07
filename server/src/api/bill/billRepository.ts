@@ -65,8 +65,8 @@ export class BillRepository {
         return await prisma.bill.findMany({ include: { order: { include: { items: { include: { menuItem: true } } } } } });
     }
 
-    async markAsPaid(id: string, paymentMode: PaymentMode): Promise<BillResponse> {
-        return await prisma.bill.update({ where: { id }, data: { isPaid: true, paymentMode }, include: { order: { include: { items: { include: { menuItem: true } } } } } });
+    async markAsPaid(id: string): Promise<BillResponse> {
+        return await prisma.bill.update({ where: { id }, data: { isPaid: true , paidAt: new Date()}, include: { order: { include: { items: { include: { menuItem: true } } } } } });
     }
 
     async getDailyStats(startDate: Date, endDate: Date) {
