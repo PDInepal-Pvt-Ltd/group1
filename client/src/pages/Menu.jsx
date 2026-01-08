@@ -205,7 +205,7 @@ export default function MenuPage() {
                   Add Item
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Add Menu Item</DialogTitle>
                   <DialogDescription>Create a new menu item</DialogDescription>
@@ -540,7 +540,7 @@ export default function MenuPage() {
           </Card>
 
           <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-            <DialogContent>
+            <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Edit Menu Item</DialogTitle>
                 <DialogDescription>Update menu item details</DialogDescription>
@@ -691,7 +691,7 @@ export default function MenuPage() {
           </Dialog>
 
           <Dialog open={isFlashDialogOpen} onOpenChange={setIsFlashDialogOpen}>
-            <DialogContent>
+            <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{selectedMark ? "Edit Flash Sale" : "Add Flash Sale"}</DialogTitle>
                 <DialogDescription>{selectedMark ? "Update" : "Create"} a flash sale for a menu item</DialogDescription>
