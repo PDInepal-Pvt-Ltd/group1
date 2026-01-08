@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { useSelector, useDispatch } from "react-redux"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -10,6 +10,14 @@ import { Plus, Minus, ShoppingCart, Trash2, Leaf, Search, ArrowLeft, X, AlertCir
 import toast from "react-hot-toast"
 import { ModeToggle } from "@/components/ModeToggle"
 import { createOrder } from "@/store/orderSlice"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
 export default function Order({ tableId, onBack }) {
   const dispatch = useDispatch()
@@ -127,6 +135,34 @@ export default function Order({ tableId, onBack }) {
   const currentCategoryName = selectedCategory === "all"
     ? "All Items"
     : categories.find(c => c.id === selectedCategory)?.name || "Category";
+
+  // New states for confirmation and history
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [lastOrder, setLastOrder] = useState(null);
+  const [showOrderHistory, setShowOrderHistory] = useState(false);
+  const [orderHistory, setOrderHistory] = useState([]);
+
+  // LocalStorage helpers
+  const STORAGE_KEY = `table_orders_${tableId}`;
+
+  const saveOrderToLocal = (order) => {
+    const existing = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    existing.push(order);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
+  };
+
+  const getLocalOrders = () => JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+
+  const clearLocalOrders = () => {
+    localStorage.removeItem(STORAGE_KEY);
+    setOrderHistory([]);
+  };
+
+  // Load history on mount
+  useEffect(() => {
+    setOrderHistory(getLocalOrders());
+  }, [tableId]);
+
   return (
     <div className={`h-screen flex overflow-hidden dark:bg-slate-950 bg-linear-to-br from-slate-50 via-white to-amber-50/30`}>
       {/* LEFT SIDE: Menu Browser */}
@@ -155,6 +191,23 @@ export default function Order({ tableId, onBack }) {
               </div>
               <div className="flex items-center gap-2">
                 <ModeToggle />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setOrderHistory(getLocalOrders()); // Refresh
+                    setShowOrderHistory(true);
+                  }}
+                  className="relative border-amber-200 dark:border-amber-800 hover:bg-amber-50 dark:hover:bg-amber-950 dark:text-amber-400"
+                >
+                  <ShoppingCart className="w-4 h-4 mr-2" />
+                  My Orders
+                  {orderHistory.length > 0 && (
+                    <Badge className="absolute -top-2 -right-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-2 border-0 shadow-lg">
+                      {orderHistory.length}
+                    </Badge>
+                  )}
+                </Button>
                 <Button
                   variant="outline"
                   size="lg"
@@ -299,7 +352,7 @@ export default function Order({ tableId, onBack }) {
                     className="group hover:shadow-2xl hover:shadow-amber-500/10 dark:hover:shadow-amber-500/20 transition-all duration-300 border-slate-200 dark:border-slate-800 hover:border-amber-300 dark:hover:border-amber-700 overflow-hidden bg-white dark:bg-slate-800/50 backdrop-blur-sm hover:-translate-y-1"
                   >
                     <CardContent className="p-0">
-                      <div className="relative h-52 bg-linear-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 overflow-hidden">
+                      <div className="relative h-52 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 overflow-hidden">
                         {item.imageUrl ? (
                           <img
                             src={item.imageUrl}
@@ -312,17 +365,17 @@ export default function Order({ tableId, onBack }) {
                           </div>
                         )}
                        
-                        <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                        
                         <div className="absolute top-3 left-3 flex flex-col gap-2">
                           {hasDiscount && (
-                            <Badge className="bg-linear-to-r from-red-500 via-rose-500 to-pink-500 text-white shadow-xl shadow-red-500/50 border-0 animate-pulse">
+                            <Badge className="bg-gradient-to-r from-red-500 via-rose-500 to-pink-500 text-white shadow-xl shadow-red-500/50 border-0 animate-pulse">
                               <Sparkles className="w-3 h-3 mr-1" />
                               {discountPct}% OFF
                             </Badge>
                           )}
                           {item.isVeg && (
-                            <Badge className="bg-linear-to-r from-green-500 to-emerald-500 text-white shadow-xl shadow-green-500/50 border-0">
+                            <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-xl shadow-green-500/50 border-0">
                               <Leaf className="w-3 h-3 mr-1" />
                               Veg
                             </Badge>
@@ -331,7 +384,7 @@ export default function Order({ tableId, onBack }) {
                         <Button
                           onClick={() => addToCart(item)}
                           size="sm"
-                          className="absolute bottom-3 right-3 bg-linear-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-xl shadow-amber-500/50 border-0 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0"
+                          className="absolute bottom-3 right-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-xl shadow-amber-500/50 border-0 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0"
                         >
                           <Plus className="w-4 h-4 mr-1" />
                           Add to Cart
@@ -363,7 +416,7 @@ export default function Order({ tableId, onBack }) {
                         )}
                         <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-700">
                           <div>
-                            <div className="text-2xl font-bold bg-linear-to-r from-amber-600 to-orange-600 dark:from-amber-400 dark:to-orange-400 bg-clip-text text-transparent">
+                            <div className="text-2xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 dark:from-amber-400 dark:to-orange-400 bg-clip-text text-transparent">
                               ${finalPrice.toFixed(2)}
                             </div>
                             {hasDiscount && (
@@ -375,7 +428,7 @@ export default function Order({ tableId, onBack }) {
                           <Button
                             onClick={() => addToCart(item)}
                             size="sm"
-                            className="bg-linear-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-lg shadow-amber-500/30 border-0 lg:opacity-0 lg:group-hover:opacity-100 transition-all duration-300"
+                            className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-lg shadow-amber-500/30 border-0 lg:opacity-0 lg:group-hover:opacity-100 transition-all duration-300"
                           >
                             <Plus className="w-4 h-4 mr-1" />
                             Add
@@ -389,7 +442,7 @@ export default function Order({ tableId, onBack }) {
             </div>
             {filteredItems.length === 0 && (
               <div className="text-center py-20">
-                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-linear-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center">
+                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center">
                   <Tag className="w-10 h-10 text-slate-400 dark:text-slate-600" />
                 </div>
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">No items found</h3>
@@ -411,7 +464,7 @@ export default function Order({ tableId, onBack }) {
         <div className="shrink-0 p-6 border-b border-slate-200 dark:border-slate-800 bg-gradient-to-br from-amber-50 via-orange-50 to-amber-50 dark:from-slate-800 dark:via-slate-800 dark:to-slate-900 backdrop-blur-xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-linear-to-r from-amber-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/30">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/30">
                 <ShoppingCart className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -436,7 +489,7 @@ export default function Order({ tableId, onBack }) {
           <div className="py-6">
             {cart.length === 0 ? (
               <div className="text-center py-16">
-                <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-linear-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center">
+                <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center">
                   <ShoppingCart className="w-12 h-12 text-slate-300 dark:text-slate-700" />
                 </div>
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Your cart is empty</h3>
@@ -488,7 +541,7 @@ export default function Order({ tableId, onBack }) {
                             </Button>
                           </div>
                           <div className="flex items-center justify-between mt-3">
-                            <div className="flex items-center gap-2 bg-linear-to-r from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 rounded-xl p-1 shadow-inner">
+                            <div className="flex items-center gap-2 bg-gradient-to-r from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 rounded-xl p-1 shadow-inner">
                               <Button
                                 variant="ghost"
                                 size="sm"
@@ -509,7 +562,7 @@ export default function Order({ tableId, onBack }) {
                                 <Plus className="w-4 h-4" />
                               </Button>
                             </div>
-                            <div className="text-lg font-bold bg-linear-to-r from-amber-600 to-orange-600 dark:from-amber-400 dark:to-orange-400 bg-clip-text text-transparent">
+                            <div className="text-lg font-bold bg-gradient-to-r from-amber-600 to-orange-600 dark:from-amber-400 dark:to-orange-400 bg-clip-text text-transparent">
                               ${(item.price * item.qty).toFixed(2)}
                             </div>
                           </div>
@@ -560,7 +613,7 @@ export default function Order({ tableId, onBack }) {
         </div>
         {/* Fixed Cart Footer */}
         {cart.length > 0 && (
-          <div className="shrink-0 p-6 border-t border-slate-200 dark:border-slate-800 bg-linear-to-br from-white to-amber-50/30 dark:from-slate-900 dark:to-amber-950/20 backdrop-blur-xl shadow-2xl">
+          <div className="shrink-0 p-6 border-t border-slate-200 dark:border-slate-800 bg-gradient-to-br from-white to-amber-50/30 dark:from-slate-900 dark:to-amber-950/20 backdrop-blur-xl shadow-2xl">
             <div className="space-y-4">
               <div className="space-y-2">
                 <label className="text-xs font-medium text-slate-500 uppercase tracking-wider block">
@@ -583,7 +636,7 @@ export default function Order({ tableId, onBack }) {
               </div>
               <div className="flex justify-between font-bold text-lg text-slate-900 dark:text-white border-t border-slate-200 dark:border-slate-800 pt-4">
                 <span>Total</span>
-                <span className="bg-linear-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">${total.toFixed(2)}</span>
+                <span className="bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">${total.toFixed(2)}</span>
               </div>
               <div className="flex gap-3">
                 <Button
@@ -595,9 +648,9 @@ export default function Order({ tableId, onBack }) {
                   Clear Cart
                 </Button>
                 <Button
-                  className="flex-1 bg-linear-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-lg shadow-amber-500/30"
+                  className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-lg shadow-amber-500/30"
                   onClick={() => {
-                    dispatch(createOrder({
+                    const orderData = {
                       tableId: tableId,
                       isQrOrder: true,
                       notes: orderNotes,
@@ -606,13 +659,18 @@ export default function Order({ tableId, onBack }) {
                         qty: item.qty,
                         notes: item.notes,
                         payerName: item.payerName
-                      }))}));
-                    // toast.success("Order placed successfully!", {
-                    //   icon: '🎉',
-                      
-                    // });
+                      })),
+                      createdAt: new Date().toISOString(),
+                      status: 'Pending',
+                      total: total.toFixed(2),
+                    };
+                    dispatch(createOrder(orderData));
+                    saveOrderToLocal(orderData);
+                    setLastOrder(orderData);
+                    setShowConfirmation(true);
                     setCart([]);
                     setIsCartOpen(false);
+                    // toast.success("Order placed successfully!", { icon: '🎉' });
                   }}
                 >
                   <ShoppingCart className="w-4 h-4 mr-2" />
@@ -623,6 +681,97 @@ export default function Order({ tableId, onBack }) {
           </div>
         )}
       </div>
+
+      {/* Confirmation Modal */}
+      <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>
+        <DialogContent className="sm:max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-amber-500" />
+              Order Placed!
+            </DialogTitle>
+            <DialogDescription className="text-slate-600 dark:text-slate-400">
+              Your order for Table {currentTable?.name} is being prepared. Here's a summary:
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="max-h-60 pr-4">
+            {lastOrder?.items.map((item, idx) => {
+              const menuItem = menuItems.find(m => m.id === item.menuItemId);
+              return (
+                <div key={idx} className="py-3 border-b border-slate-200 dark:border-slate-800 last:border-0">
+                  <div className="flex justify-between">
+                    <span className="font-medium">{menuItem?.name} x {item.qty}</span>
+                    <span>${(menuItem?.price * item.qty).toFixed(2)}</span>
+                  </div>
+                  {item.notes && <p className="text-sm text-slate-500">Notes: {item.notes}</p>}
+                  {item.payerName && <p className="text-sm text-slate-500">For: {item.payerName}</p>}
+                </div>
+              );
+            })}
+          </ScrollArea>
+          <div className="mt-4 space-y-2">
+            <div className="flex justify-between font-bold">
+              <span>Total</span>
+              <span>${lastOrder?.total}</span>
+            </div>
+            {lastOrder?.notes && <p className="text-sm text-slate-600 dark:text-slate-400">Order Notes: {lastOrder.notes}</p>}
+          </div>
+          <DialogFooter className="mt-6 flex sm:justify-between">
+            <Button variant="outline" onClick={() => setShowConfirmation(false)}>
+              Close
+            </Button>
+            <Button onClick={() => {
+              setShowConfirmation(false);
+              // Optionally, reopen cart or something
+            }}>
+              Add More Items
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Order History Modal */}
+      <Dialog open={showOrderHistory} onOpenChange={setShowOrderHistory}>
+        <DialogContent className="sm:max-w-lg bg-white dark:bg-slate-900 rounded-2xl shadow-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-slate-900 dark:text-white">Your Orders for Table {currentTable?.name}</DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-80 pr-4">
+            {orderHistory.length === 0 ? (
+              <p className="text-center text-slate-600 dark:text-slate-400 py-8">No orders yet.</p>
+            ) : (
+              orderHistory.map((order, idx) => (
+                <Card key={idx} className="mb-4 border-slate-200 dark:border-slate-800">
+                  <CardContent className="p-4">
+                    <div className="flex justify-between mb-2">
+                      <span className="font-medium">Order #{idx + 1}</span>
+                      <Badge variant="secondary">{order.status}</Badge>
+                    </div>
+                    <div className="space-y-2">
+                      {order.items.map((item, i) => {
+                        const menuItem = menuItems.find(m => m.id === item.menuItemId);
+                        return (
+                          <div key={i} className="text-sm text-slate-700 dark:text-slate-300">
+                            {menuItem?.name} x {item.qty}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="mt-4 font-bold text-slate-900 dark:text-white">Total: ${order.total}</div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-2">Placed: {new Date(order.createdAt).toLocaleTimeString()}</div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </ScrollArea>
+          <DialogFooter className="mt-6 flex sm:justify-between">
+            <Button variant="outline" onClick={clearLocalOrders}>
+              Clear History
+            </Button>
+            <Button onClick={() => setShowOrderHistory(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
