@@ -39,12 +39,12 @@ export default class BaseQueue {
 
         this.worker.on("failed", (job, err) => {
             if(!job) return;
-            logger.error(`Job ${job.id} of type ${job.name} failed in queue ${queueName}: ${err.message}`);
-            logger.error("job data", job.data ? JSON.stringify(job.data) : "no data");
+            // logger.error(`Job ${job.id} of type ${job.name} failed in queue ${queueName}: ${err.message}`);
+            // logger.error("job data", job.data ? JSON.stringify(job.data) : "no data");
         });
 
         this.worker.on("error", (err) => {
-            logger.error(`Worker ${queueName} error: ${err.message}`);
+            // logger.error(`Worker ${queueName} error: ${err.message}`);
         })
 
         this.worker.on("completed", (job) => {
