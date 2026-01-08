@@ -145,16 +145,34 @@ export default function POSPage() {
             </div>
           </div>
 
-          <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="w-full">
-            <TabsList className="mb-4">
-              <TabsTrigger value="all">All Items</TabsTrigger>
-              {categories.map((cat) => (
-                <TabsTrigger key={cat.id} value={cat.id}>
-                  {cat.name}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
+         <Tabs
+  value={selectedCategory}
+  onValueChange={setSelectedCategory}
+  className="w-full border-b border-border"
+>
+  {/* Scroll container */}
+  <div className="overflow-x-auto scrollbar-hide mb-4">
+    <TabsList className="flex min-w-max gap-2 bg-transparent p-0">
+      <TabsTrigger
+        value="all"
+        className="shrink-0 whitespace-nowrap"
+      >
+        All Items
+      </TabsTrigger>
+
+      {categories.map((cat) => (
+        <TabsTrigger
+          key={cat.id}
+          value={cat.id}
+          className="shrink-0 whitespace-nowrap"
+        >
+          {cat.name}
+        </TabsTrigger>
+      ))}
+    </TabsList>
+  </div>
+</Tabs>
+
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {filteredItems.map((item) => {

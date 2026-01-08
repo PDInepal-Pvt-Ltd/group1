@@ -67,20 +67,6 @@ export default function AuditLogPage() {
         return () => clearInterval(interval);
       }, [dispatch]);
 
-  // Dark mode detection
-  React.useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = () => {
-      if (mediaQuery.matches) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-    };
-    handleChange();
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
-  }, []);
   // --- STATE ---
   const [searchTerm, setSearchTerm] = React.useState("")
   const [selectedAction, setSelectedAction] = React.useState("ALL")

@@ -54,7 +54,7 @@ API.interceptors.response.use(
         })
           .then((token) => {
             originalRequest.headers.Authorization = `Bearer ${token}`;
-            return api(originalRequest);
+            return API(originalRequest);
           })
           .catch((err) => Promise.reject(err));
       }
@@ -66,7 +66,7 @@ API.interceptors.response.use(
         // Hit refresh endpoint
         const response = await axios.post(
           `${BASE_URL}/user/refresh`,
-          {},
+          {refreshToken: localStorage.getItem("refreshToken")},
           { withCredentials: true }
         );
 
@@ -74,12 +74,12 @@ API.interceptors.response.use(
         localStorage.setItem("accessToken", accessToken);
 
         // Update headers for the current instance and process the queue
-        api.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+        API.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
         processQueue(null, accessToken);
 
         // Retry the original request
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-        return api(originalRequest);
+        return API(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
         localStorage.removeItem("accessToken");

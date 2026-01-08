@@ -106,10 +106,10 @@ export default function TableAvailability() {
                   <div className="flex justify-between items-start">
                     <div>
                       <h3 className="text-3xl font-light text-foreground tracking-wide">{table.name}</h3>
-                      <div className="flex items-center gap-1.5 mt-1 text-muted-foreground">
+                      {/* <div className="flex items-center gap-1.5 mt-1 text-muted-foreground">
                         <Clock size={14} />
                         <span className="text-xs">Updated {new Date(table.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                      </div>
+                      </div> */}
                     </div>
                     <div className={`px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide border ${
                       table.status === 'AVAILABLE' ? 'border-amber-400/50 text-amber-300 bg-amber-400/10' : 

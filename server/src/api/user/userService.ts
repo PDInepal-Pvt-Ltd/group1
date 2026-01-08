@@ -89,7 +89,7 @@ export class UserService {
             }
 
             const refreshToken = jwt.sign({ userId: user.id, role: user.role, jti: uuidv4() }, process.env.REFRESH_TOKEN_SECRET as Secret, { expiresIn: "7d" });
-            const accessToken = jwt.sign({ userId: user.id, role: user.role, jti: uuidv4() }, process.env.ACCESS_TOKEN_SECRET as Secret, { expiresIn: "45m" });
+            const accessToken = jwt.sign({ userId: user.id, role: user.role, jti: uuidv4() }, process.env.ACCESS_TOKEN_SECRET as Secret, { expiresIn: "7d" });
             const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
             await this.userRepository.createRefreshToken(user.id, refreshToken, expiresAt, ip, userAgent);
@@ -172,7 +172,7 @@ export class UserService {
             const newRefreshToken = jwt.sign({ userId: refreshTokenData.user.id, role: refreshTokenData.user.role, jti: uuidv4() }, process.env.REFRESH_TOKEN_SECRET as string, { expiresIn: "7d" });
             const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
             await this.userRepository.createRefreshToken(refreshTokenData.user.id, newRefreshToken, expiresAt, ip, userAgent);
-            const accessToken = jwt.sign({ userId: refreshTokenData.user.id, role: refreshTokenData.user.role, jti: uuidv4() }, process.env.ACCESS_TOKEN_SECRET as string, { expiresIn: "45m" });
+            const accessToken = jwt.sign({ userId: refreshTokenData.user.id, role: refreshTokenData.user.role, jti: uuidv4() }, process.env.ACCESS_TOKEN_SECRET as string, { expiresIn: "7d" });
 
             await this.auditLogQueue.add("createAuditLog", {
                 userId: refreshTokenData.user.id,

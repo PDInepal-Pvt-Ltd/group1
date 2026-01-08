@@ -327,7 +327,7 @@ console.log(preparingOrders,'preparing orders')
                             </div>
                           )}
                           <div className="space-y-4 mb-6">
-                            {order.items.map((item) => {
+                            {(order.items || []).map((item) => {
                               const menuItem = items.find((m) => m.id === item.menuItemId);
                               const imageUrl = menuItem?.imageUrl?.replace(/<|>/g, '') || '';
                               return (
@@ -434,7 +434,7 @@ console.log(preparingOrders,'preparing orders')
                             </div>
                           )}
                           <div className="space-y-4 mb-6">
-                            {order.items.map((item) => {
+                            {(order.items || []).map((item) => {
                               const menuItem = items.find((m) => m.id === item.menuItemId);
                               const imageUrl = menuItem?.imageUrl?.replace(/<|>/g, '') || '';
                               return (
@@ -550,7 +550,7 @@ console.log(preparingOrders,'preparing orders')
                             </div>
                           )}
                           <div className="space-y-4 mb-6">
-                            {order.items.map((item) => {
+                            {(order.items || []).map((item) => {
                               const menuItem = items.find((m) => m.id === item.menuItemId);
                               const imageUrl = menuItem?.imageUrl?.replace(/<|>/g, '') || '';
                               return (
