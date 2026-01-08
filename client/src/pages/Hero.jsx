@@ -6,11 +6,19 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ModeToggle } from '@/components/ModeToggle';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchDailySpecials } from '@/store/surplusSlice';
 export default function Hero({ onReserveClick, onExploreMenuClick }) {
   const [tableId, setTableId] = useState('');
   const [timeLeft, setTimeLeft] = useState(7200);
   const [currentDishIndex, setCurrentDishIndex] = useState(0);
+const { dailySpecials } = useSelector((state) => state.surplus);
 
+const carouselLength = dailySpecials.length;
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(fetchDailySpecials());
+  }, []);
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const tableIdParam = params.get('tableId');
@@ -18,21 +26,15 @@ export default function Hero({ onReserveClick, onExploreMenuClick }) {
       setTableId(tableIdParam);
     }
     const timer = setInterval(() => setTimeLeft(prev => (prev > 0 ? prev - 1 : 0)), 1000);
-    const carousel = setInterval(() => setCurrentDishIndex(prev => (prev + 1) % 3), 5000);
+    const carousel = setInterval(() => setCurrentDishIndex(prev => (prev + 1) % carouselLength), 5000);
     return () => { clearInterval(timer); clearInterval(carousel); };
-  }, []);
+  }, [carouselLength]);
 
   const formatTime = (seconds) => {
     const m = Math.floor((seconds % 3600) / 60);
     const s = seconds % 60;
     return `${m}m ${s}s`;
   };
-
-  const trendingDishes = [
-    { name: "Wagyu Steak", img: "https://images.pexels.com/photos/769289/pexels-photo-769289.jpeg" },
-    { name: "Truffle Pasta", img: "https://images.pexels.com/photos/1279330/pexels-photo-1279330.jpeg" },
-    { name: "Grilled Salmon", img: "https://images.pexels.com/photos/3935702/pexels-photo-3935702.jpeg" }
-  ];
 
   return (
     <div className="relative h-screen w-full overflow-hidden bg-background font-sans">
@@ -55,7 +57,7 @@ export default function Hero({ onReserveClick, onExploreMenuClick }) {
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500 text-slate-950">
             <ChefHat size={24} />
           </div>
-          <span className="text-xl font-black tracking-tighter text-foreground">HayaRestro</span>
+          <span className="text-xl font-black tracking-tighter text-foreground">AURELIA</span>
         </div>
 
         <button
@@ -156,10 +158,10 @@ export default function Hero({ onReserveClick, onExploreMenuClick }) {
             <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-amber-500">
               <TrendingUp size={12} /> Popular Now
             </p>
-            <p className="text-xl font-light text-foreground italic">"{trendingDishes[currentDishIndex].name}"</p>
+            <p className="text-xl font-light text-foreground italic">"{dailySpecials[currentDishIndex]?.menuItem?.name || "Trending Dish"}"</p>
           </div>
           <img
-            src={trendingDishes[currentDishIndex].img}
+            src={dailySpecials[currentDishIndex]?.menuItem?.imageUrl || "https://via.placeholder.com/150"}
             className="h-16 w-16 rounded-full border-2 border-amber-500/20 object-cover"
             alt="Trending"
           />
