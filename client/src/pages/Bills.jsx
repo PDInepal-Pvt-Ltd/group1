@@ -72,12 +72,12 @@ export default function BillsPage() {
         dispatch(createBill(newBill))
         setIsGenerateDialogOpen(false)
         setSelectedOrder("")
-        toast.success("Bill has been generated")
+        fetchBills()
     }
 
     const markAsPaid = (billId) => {
         dispatch(payBill(billId))
-        toast.success("Bill has been marked as paid")
+        fetchBills()
     }
 
     const handleDownload = (pdfUrl, billId) => {
