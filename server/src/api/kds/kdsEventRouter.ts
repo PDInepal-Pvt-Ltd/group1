@@ -5,7 +5,6 @@ import { CreateKdsEventSchema, KdsEventResponseSchema, KdsPerformanceSchema } fr
 import { kdsEventController } from "./kdsEventController";
 import { StatusCodes } from "http-status-codes";
 import { verifyJWT } from "@/common/middleware/verifyJWT";
-import { checkRole } from "@/common/middleware/verifyRole";
 
 export const kdsEventRegistry = new OpenAPIRegistry();
 export const kdsEventRouter: Router = Router();
@@ -69,7 +68,7 @@ kdsEventRegistry.registerPath({
     security: [{ bearerAuth: [] }],
     responses: createApiResponse(KdsPerformanceSchema, "Report generated", StatusCodes.OK),
 });
-kdsEventRouter.get("/kds/performance", verifyJWT, checkRole(["ADMIN"]), kdsEventController.getPerformance);
+kdsEventRouter.get("/kds/performance", verifyJWT, kdsEventController.getPerformance);
 
 kdsEventRegistry.registerPath({
     method: "get",
