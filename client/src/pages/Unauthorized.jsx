@@ -23,7 +23,7 @@ export default function Unauthorized() {
           Go Back
         </button>
         <button
-          onClick={() => navigate("/dashboard")}
+          onClick={() => navigate("/admin-dashboard")}
           className="flex items-center justify-center gap-2 rounded-lg bg-orange-600 px-6 py-2.5 font-medium text-white transition hover:bg-orange-700 shadow-md active:scale-95"
         >
           <Home size={18} />

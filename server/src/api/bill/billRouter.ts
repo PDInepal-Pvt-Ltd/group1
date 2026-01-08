@@ -61,7 +61,7 @@ billRegistry.registerPath({
     responses: createApiResponse(BillResponseSchema, "Bill retrieved successfully", StatusCodes.OK),
 });
 
-billRouter.get("/bill/:id", verifyJWT, checkRole([Role.ADMIN, Role.CASHIER]), billController.getBillById);
+billRouter.get("/bill/:id", verifyJWT, billController.getBillById);
 
 billRegistry.registerPath({
     method: "get",
@@ -72,7 +72,7 @@ billRegistry.registerPath({
     responses: createApiResponse(BillResponseSchema, "Bills retrieved successfully", StatusCodes.OK),
 });
 
-billRouter.get("/bill", verifyJWT, checkRole([Role.ADMIN, Role.CASHIER]), billController.getAllBills);
+billRouter.get("/bill", verifyJWT, billController.getAllBills);
 
 billRegistry.registerPath({
     method: "post",
