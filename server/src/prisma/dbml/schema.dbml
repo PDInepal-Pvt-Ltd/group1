@@ -41,6 +41,7 @@ Table Table {
   updatedAt DateTime [not null]
   deletedAt DateTime
   name String [unique, not null]
+  qrCodeUrl String
   seats Int [not null]
   status TableStatus [not null, default: 'AVAILABLE']
   assignedTo String

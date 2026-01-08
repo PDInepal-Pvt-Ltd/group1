@@ -185,7 +185,7 @@ export default function Order({ tableId, onBack }) {
                 variant={activeFilterCount > 0 ? "default" : "outline"}
                 onClick={() => setShowFilters(!showFilters)}
                 className={activeFilterCount > 0
-                  ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-lg shadow-amber-500/30"
+                  ? "bg-linear-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-lg shadow-amber-500/30"
                   : "border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 dark:text-slate-300"
                 }
               >
@@ -200,7 +200,7 @@ export default function Order({ tableId, onBack }) {
             </div>
             {/* Filter Panel */}
             {showFilters && (
-              <Card className="mt-3 border-amber-100 dark:border-amber-900/30 bg-gradient-to-br from-white to-amber-50/30 dark:from-slate-800 dark:to-amber-950/20 backdrop-blur-xl shadow-xl">
+              <Card className="mt-3 border-amber-100 dark:border-amber-900/30 bg-linear-to-br from-white to-amber-50/30 dark:from-slate-800 dark:to-amber-950/20 backdrop-blur-xl shadow-xl">
                 <CardContent className="p-4">
                   <div className="space-y-4">
                     <div>
@@ -230,7 +230,7 @@ export default function Order({ tableId, onBack }) {
                               variant={selectedAllergens.includes(allergen) ? "default" : "outline"}
                               className={`cursor-pointer transition-all ${
                                 selectedAllergens.includes(allergen)
-                                  ? "bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 text-white border-0 shadow-lg shadow-red-500/30"
+                                  ? "bg-linear-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 text-white border-0 shadow-lg shadow-red-500/30"
                                   : "border-slate-300 dark:border-slate-600 hover:border-red-300 dark:hover:border-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 dark:text-slate-300"
                               }`}
                               onClick={() => toggleAllergen(allergen)}
@@ -266,12 +266,12 @@ export default function Order({ tableId, onBack }) {
           <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="border-t border-slate-200 dark:border-slate-800">
 <div className="overflow-x-auto scrollbar-hide px-6 py-3">
   <TabsList className="flex min-w-max gap-2 bg-transparent p-0">
-      <TabsTrigger value="all" className="flex-shrink-0 whitespace-nowrap">
+      <TabsTrigger value="all" className="shrink-0 whitespace-nowrap">
         <Sparkles className="w-3 h-3 mr-2" />
         All Items ({totalCount})
       </TabsTrigger>
       {categories.map(cat => (
-        <TabsTrigger key={cat.id} value={cat.id} className="flex-shrink-0 whitespace-nowrap">
+        <TabsTrigger key={cat.id} value={cat.id} className="shrink-0 whitespace-nowrap">
           {cat.name} ({categoryCounts[cat.id] || 0})
         </TabsTrigger>
       ))}
@@ -299,7 +299,7 @@ export default function Order({ tableId, onBack }) {
                     className="group hover:shadow-2xl hover:shadow-amber-500/10 dark:hover:shadow-amber-500/20 transition-all duration-300 border-slate-200 dark:border-slate-800 hover:border-amber-300 dark:hover:border-amber-700 overflow-hidden bg-white dark:bg-slate-800/50 backdrop-blur-sm hover:-translate-y-1"
                   >
                     <CardContent className="p-0">
-                      <div className="relative h-52 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 overflow-hidden">
+                      <div className="relative h-52 bg-linear-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 overflow-hidden">
                         {item.imageUrl ? (
                           <img
                             src={item.imageUrl}
@@ -312,17 +312,17 @@ export default function Order({ tableId, onBack }) {
                           </div>
                         )}
                        
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                        
                         <div className="absolute top-3 left-3 flex flex-col gap-2">
                           {hasDiscount && (
-                            <Badge className="bg-gradient-to-r from-red-500 via-rose-500 to-pink-500 text-white shadow-xl shadow-red-500/50 border-0 animate-pulse">
+                            <Badge className="bg-linear-to-r from-red-500 via-rose-500 to-pink-500 text-white shadow-xl shadow-red-500/50 border-0 animate-pulse">
                               <Sparkles className="w-3 h-3 mr-1" />
                               {discountPct}% OFF
                             </Badge>
                           )}
                           {item.isVeg && (
-                            <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-xl shadow-green-500/50 border-0">
+                            <Badge className="bg-linear-to-r from-green-500 to-emerald-500 text-white shadow-xl shadow-green-500/50 border-0">
                               <Leaf className="w-3 h-3 mr-1" />
                               Veg
                             </Badge>
@@ -331,7 +331,7 @@ export default function Order({ tableId, onBack }) {
                         <Button
                           onClick={() => addToCart(item)}
                           size="sm"
-                          className="absolute bottom-3 right-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-xl shadow-amber-500/50 border-0 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0"
+                          className="absolute bottom-3 right-3 bg-linear-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-xl shadow-amber-500/50 border-0 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0"
                         >
                           <Plus className="w-4 h-4 mr-1" />
                           Add to Cart
@@ -363,7 +363,7 @@ export default function Order({ tableId, onBack }) {
                         )}
                         <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-700">
                           <div>
-                            <div className="text-2xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 dark:from-amber-400 dark:to-orange-400 bg-clip-text text-transparent">
+                            <div className="text-2xl font-bold bg-linear-to-r from-amber-600 to-orange-600 dark:from-amber-400 dark:to-orange-400 bg-clip-text text-transparent">
                               ${finalPrice.toFixed(2)}
                             </div>
                             {hasDiscount && (
@@ -375,7 +375,7 @@ export default function Order({ tableId, onBack }) {
                           <Button
                             onClick={() => addToCart(item)}
                             size="sm"
-                            className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-lg shadow-amber-500/30 border-0 lg:opacity-0 lg:group-hover:opacity-100 transition-all duration-300"
+                            className="bg-linear-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-lg shadow-amber-500/30 border-0 lg:opacity-0 lg:group-hover:opacity-100 transition-all duration-300"
                           >
                             <Plus className="w-4 h-4 mr-1" />
                             Add
@@ -389,7 +389,7 @@ export default function Order({ tableId, onBack }) {
             </div>
             {filteredItems.length === 0 && (
               <div className="text-center py-20">
-                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center">
+                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-linear-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center">
                   <Tag className="w-10 h-10 text-slate-400 dark:text-slate-600" />
                 </div>
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">No items found</h3>
@@ -408,10 +408,10 @@ export default function Order({ tableId, onBack }) {
         bg-white dark:bg-slate-900 flex flex-col
       `}>
         {/* Fixed Cart Header */}
-        <div className="flex-shrink-0 p-6 border-b border-slate-200 dark:border-slate-800 bg-gradient-to-br from-amber-50 via-orange-50 to-amber-50 dark:from-slate-800 dark:via-slate-800 dark:to-slate-900 backdrop-blur-xl">
+        <div className="shrink-0 p-6 border-b border-slate-200 dark:border-slate-800 bg-gradient-to-br from-amber-50 via-orange-50 to-amber-50 dark:from-slate-800 dark:via-slate-800 dark:to-slate-900 backdrop-blur-xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/30">
+              <div className="w-10 h-10 rounded-full bg-linear-to-r from-amber-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/30">
                 <ShoppingCart className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -436,7 +436,7 @@ export default function Order({ tableId, onBack }) {
           <div className="py-6">
             {cart.length === 0 ? (
               <div className="text-center py-16">
-                <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center">
+                <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-linear-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center">
                   <ShoppingCart className="w-12 h-12 text-slate-300 dark:text-slate-700" />
                 </div>
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Your cart is empty</h3>
@@ -488,7 +488,7 @@ export default function Order({ tableId, onBack }) {
                             </Button>
                           </div>
                           <div className="flex items-center justify-between mt-3">
-                            <div className="flex items-center gap-2 bg-gradient-to-r from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 rounded-xl p-1 shadow-inner">
+                            <div className="flex items-center gap-2 bg-linear-to-r from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 rounded-xl p-1 shadow-inner">
                               <Button
                                 variant="ghost"
                                 size="sm"
@@ -509,7 +509,7 @@ export default function Order({ tableId, onBack }) {
                                 <Plus className="w-4 h-4" />
                               </Button>
                             </div>
-                            <div className="text-lg font-bold bg-gradient-to-r from-amber-600 to-orange-600 dark:from-amber-400 dark:to-orange-400 bg-clip-text text-transparent">
+                            <div className="text-lg font-bold bg-linear-to-r from-amber-600 to-orange-600 dark:from-amber-400 dark:to-orange-400 bg-clip-text text-transparent">
                               ${(item.price * item.qty).toFixed(2)}
                             </div>
                           </div>
@@ -560,7 +560,7 @@ export default function Order({ tableId, onBack }) {
         </div>
         {/* Fixed Cart Footer */}
         {cart.length > 0 && (
-          <div className="flex-shrink-0 p-6 border-t border-slate-200 dark:border-slate-800 bg-gradient-to-br from-white to-amber-50/30 dark:from-slate-900 dark:to-amber-950/20 backdrop-blur-xl shadow-2xl">
+          <div className="shrink-0 p-6 border-t border-slate-200 dark:border-slate-800 bg-linear-to-br from-white to-amber-50/30 dark:from-slate-900 dark:to-amber-950/20 backdrop-blur-xl shadow-2xl">
             <div className="space-y-4">
               <div className="space-y-2">
                 <label className="text-xs font-medium text-slate-500 uppercase tracking-wider block">
@@ -570,7 +570,7 @@ export default function Order({ tableId, onBack }) {
                   placeholder="Anything else we should know for the whole table?"
                   value={orderNotes}
                   onChange={(e) => setOrderNotes(e.target.value)}
-                  className="w-full min-h-[80px] p-3 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 focus:ring-2 focus:ring-amber-500/20 outline-none resize-none transition-all"
+                  className="w-full min-h-20 p-3 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 focus:ring-2 focus:ring-amber-500/20 outline-none resize-none transition-all"
                 />
               </div>
               <div className="flex justify-between text-slate-700 dark:text-slate-300">
@@ -583,7 +583,7 @@ export default function Order({ tableId, onBack }) {
               </div>
               <div className="flex justify-between font-bold text-lg text-slate-900 dark:text-white border-t border-slate-200 dark:border-slate-800 pt-4">
                 <span>Total</span>
-                <span className="bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">${total.toFixed(2)}</span>
+                <span className="bg-linear-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">${total.toFixed(2)}</span>
               </div>
               <div className="flex gap-3">
                 <Button
@@ -595,7 +595,7 @@ export default function Order({ tableId, onBack }) {
                   Clear Cart
                 </Button>
                 <Button
-                  className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-lg shadow-amber-500/30"
+                  className="flex-1 bg-linear-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-lg shadow-amber-500/30"
                   onClick={() => {
                     dispatch(createOrder({
                       tableId: tableId,
@@ -607,10 +607,10 @@ export default function Order({ tableId, onBack }) {
                         notes: item.notes,
                         payerName: item.payerName
                       }))}));
-                    toast.success("Order placed successfully!", {
-                      icon: '🎉',
+                    // toast.success("Order placed successfully!", {
+                    //   icon: '🎉',
                       
-                    });
+                    // });
                     setCart([]);
                     setIsCartOpen(false);
                   }}

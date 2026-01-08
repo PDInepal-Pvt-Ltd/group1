@@ -8,10 +8,7 @@ import {
 } from "@/components/ui/card"
 import { 
   Settings as SettingsIcon, 
-  Store, 
-  Receipt, 
-  Clock, 
-  ShieldCheck,
+  User, 
   Save,
   Moon
 } from "lucide-react"
@@ -19,11 +16,46 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Separator } from "@/components/ui/separator"
 import { ModeToggle } from "@/components/ModeToggle"
 import * as React from "react"
+import { useDispatch, useSelector } from "react-redux"
+import { updateProfile } from "@/store/authSlice"
+import toast from "react-hot-toast"
 
 export default function SettingsPage() {
+  const dispatch = useDispatch()
+  const { user, loading } = useSelector((state) => state.auth)
+
+  // Profile form state (based on User model: name, email, password)
+  const [name, setName] = React.useState(user?.name || "")
+  const [email, setEmail] = React.useState(user?.email || "")
+  const [password, setPassword] = React.useState("")
+  const [confirmPassword, setConfirmPassword] = React.useState("")
+
+  React.useEffect(() => {
+    if (user) {
+      setName(user.name)
+      setEmail(user.email)
+    }
+  }, [user])
+
+  const handleProfileSubmit = async (e) => {
+    e.preventDefault()
+    if (password && password !== confirmPassword) {
+      toast.error("Passwords do not match")
+      return
+    }
+    const data = { name, email, isActive: user?.isActive, role: user?.role }
+    if (password) data.password = password // Only include if provided (app logic should hash)
+    try {
+      await dispatch(updateProfile({ id: user.id, data })).unwrap()
+      setPassword("")
+      setConfirmPassword("")
+    } catch (error) {
+      // Error handled via toast in thunk
+    }
+  }
+
   return (
     <div className="flex h-screen bg-background transition-colors duration-300">
       <Sidebar />
@@ -38,56 +70,79 @@ export default function SettingsPage() {
                 Settings
               </h1>
               <p className="text-muted-foreground mt-1">
-                Manage restaurant configuration and system preferences.
+                Manage your profile and system preferences.
               </p>
             </div>
-            <Button className="gap-2">
-              <Save className="h-4 w-4" /> Save Changes
-            </Button>
           </div>
 
-          <Tabs defaultValue="general" className="space-y-6">
+          <Tabs defaultValue="profile" className="space-y-6">
             <TabsList className="bg-card border border-border p-1 h-12 shadow-sm">
-              <TabsTrigger value="general" className="gap-2 px-4">
-                <Store className="h-4 w-4"/> General
+              <TabsTrigger value="profile" className="gap-2 px-4">
+                <User className="h-4 w-4"/> Profile
               </TabsTrigger>
-              <TabsTrigger value="billing" className="gap-2 px-4">
-                <Receipt className="h-4 w-4"/> Billing & Tax
-              </TabsTrigger>
-              <TabsTrigger value="operations" className="gap-2 px-4">
-                <Clock className="h-4 w-4"/> Operations
-              </TabsTrigger>
-              <TabsTrigger value="security" className="gap-2 px-4">
-                <ShieldCheck className="h-4 w-4"/> Security
+              <TabsTrigger value="appearance" className="gap-2 px-4">
+                <Moon className="h-4 w-4"/> Appearance
               </TabsTrigger>
             </TabsList>
 
-            {/* GENERAL SETTINGS */}
-            <TabsContent value="general" className="space-y-6">
+            {/* PROFILE SETTINGS */}
+            <TabsContent value="profile" className="space-y-6">
               <Card className="border-border shadow-sm">
                 <CardHeader>
-                  <CardTitle>Restaurant Identity</CardTitle>
-                  <CardDescription>How your restaurant appears on invoices and the guest QR portal.</CardDescription>
+                  <CardTitle>Edit Profile</CardTitle>
+                  <CardDescription>Update your personal information. Role and status are managed by admins.</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                <CardContent>
+                  <form onSubmit={handleProfileSubmit} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="res-name">Restaurant Name</Label>
-                      <Input id="res-name" placeholder="e.g. Gourmet Kitchen" />
+                      <Label htmlFor="name">Name</Label>
+                      <Input 
+                        id="name" 
+                        value={name} 
+                        onChange={(e) => setName(e.target.value)} 
+                        required 
+                      />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="res-email">Support Email</Label>
-                      <Input id="res-email" type="email" placeholder="contact@restaurant.com" />
+                      <Label htmlFor="email">Email</Label>
+                      <Input 
+                        id="email" 
+                        type="email" 
+                        value={email} 
+                        onChange={(e) => setEmail(e.target.value)} 
+                        required 
+                      />
                     </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="res-address">Physical Address</Label>
-                    <Input id="res-address" placeholder="123 Culinary Ave, Food City" />
-                  </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="password">New Password</Label>
+                      <Input 
+                        id="password" 
+                        type="password" 
+                        value={password} 
+                        onChange={(e) => setPassword(e.target.value)} 
+                        placeholder="Leave blank to keep current" 
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="confirm-password">Confirm New Password</Label>
+                      <Input 
+                        id="confirm-password" 
+                        type="password" 
+                        value={confirmPassword} 
+                        onChange={(e) => setConfirmPassword(e.target.value)} 
+                        placeholder="Confirm if changing password" 
+                      />
+                    </div>
+                    <Button type="submit" disabled={loading} className="gap-2">
+                      <Save className="h-4 w-4" /> Update Profile
+                    </Button>
+                  </form>
                 </CardContent>
               </Card>
+            </TabsContent>
 
-              {/* APPEARANCE SECTION */}
+            {/* APPEARANCE SECTION */}
+            <TabsContent value="appearance" className="space-y-6">
               <Card className="border-border shadow-sm">
                 <CardHeader>
                   <CardTitle>Appearance</CardTitle>
@@ -106,66 +161,6 @@ export default function SettingsPage() {
               </Card>
             </TabsContent>
 
-            {/* BILLING SETTINGS */}
-            <TabsContent value="billing">
-              <Card className="border-border shadow-sm">
-                <CardHeader>
-                  <CardTitle>Financial Configuration</CardTitle>
-                  <CardDescription>Configure taxes and charges applied to bills.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid grid-cols-3 gap-6">
-                    <div className="space-y-2">
-                      <Label>Tax Rate (%)</Label>
-                      <Input type="number" defaultValue="13" />
-                      <p className="text-[10px] text-muted-foreground">Current Prisma Default: 13%</p>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Service Charge (%)</Label>
-                      <Input type="number" defaultValue="10" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Currency Symbol</Label>
-                      <Input defaultValue="$" />
-                    </div>
-                  </div>
-                  <Separator />
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium">Enable Split Billing</p>
-                      <p className="text-xs text-muted-foreground">Allow customers to pay for individual OrderItems.</p>
-                    </div>
-                    <input type="checkbox" className="h-5 w-5 accent-primary cursor-pointer" defaultChecked />
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* OPERATIONS */}
-            <TabsContent value="operations">
-              <Card className="border-border shadow-sm">
-                <CardHeader>
-                  <CardTitle>Reservation & Table Logic</CardTitle>
-                  <CardDescription>Manage how bookings and sessions are handled.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Default Reservation Duration (Minutes)</Label>
-                    <Input type="number" defaultValue="120" className="w-48" />
-                  </div>
-                  <div className="flex items-center justify-between p-4 bg-accent border border-border rounded-lg">
-                    <div className="flex gap-3">
-                      <Clock className="h-5 w-5 text-primary" />
-                      <div>
-                        <p className="text-sm font-bold">Auto-clean Tables</p>
-                        <p className="text-xs text-muted-foreground">Automatically set table status to "NEEDS_CLEANING" after bill payment.</p>
-                      </div>
-                    </div>
-                    <input type="checkbox" className="h-5 w-5 accent-primary cursor-pointer" defaultChecked />
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
           </Tabs>
 
         </div>
