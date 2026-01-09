@@ -51,31 +51,34 @@ import { cn } from "@/lib/utils"
 import { Sidebar } from "@/components/Sidebar"
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAuditLogs } from "@/store/auditLogSlice"
+import { CleanCalendar } from "@/components/ui/clean-calendar"
+import { presets } from "@/lib/presets"
+
 export default function AuditLogPage() {
-    const dispatch = useDispatch();
-    const { loading, error, logs } = useSelector((state) => state.auditLog);
-   console.log(loading,error,logs)
-     React.useEffect(() => {
+  const dispatch = useDispatch();
+  const { loading, error, logs } = useSelector((state) => state.auditLog);
+  console.log(loading, error, logs)
+  React.useEffect(() => {
+    dispatch(fetchAuditLogs());
+
+    const interval = setInterval(() => {
+      if (document.visibilityState === "visible" && !loading) {
         dispatch(fetchAuditLogs());
-   
-        const interval = setInterval(() => {
-          if (document.visibilityState === "visible" && !loading) {
-            dispatch(fetchAuditLogs());
-          }
-        }, 30000);
-   
-        return () => clearInterval(interval);
-      }, [dispatch]);
+      }
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [dispatch]);
 
   // --- STATE ---
   const [searchTerm, setSearchTerm] = React.useState("")
   const [selectedAction, setSelectedAction] = React.useState("ALL")
   const [dateRange, setDateRange] = React.useState(undefined)
- 
+
   // Pagination State
   const [currentPage, setCurrentPage] = React.useState(1)
   const [itemsPerPage, setItemsPerPage] = React.useState(10)
- 
+
   // Copy Feedback State
   const [copiedId, setCopiedId] = React.useState(null)
   // --- HELPERS ---
@@ -92,7 +95,7 @@ export default function AuditLogPage() {
         !searchTerm ||
         log.resourceId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         log.user?.name?.toLowerCase().includes(searchTerm.toLowerCase())
-     
+
       const matchesAction = selectedAction === "ALL" || log.action === selectedAction
       const logDate = new Date(log.createdAt)
       const matchesDate = !dateRange?.from || !dateRange?.to ||
@@ -116,7 +119,7 @@ export default function AuditLogPage() {
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background">
       <Sidebar />
-     
+
       <main className="flex-1 overflow-y-auto">
         <div className="p-8 space-y-6 max-w-7xl mx-auto pb-20">
           {/* HEADER */}
@@ -161,18 +164,77 @@ export default function AuditLogPage() {
             </Select>
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="w-70 justify-start">
+                <Button variant="outline" className="w-72 justify-start font-medium">
                   <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
                   {dateRange?.from ? (
-                    dateRange.to ? <>{format(dateRange.from, "LLL dd")} - {format(dateRange.to, "LLL dd, y")}</>
-                    : format(dateRange.from, "LLL dd, y")
-                  ) : <span>Filter by Date</span>}
+                    dateRange.to ? (
+                      <>
+                        {format(dateRange.from, "MMM dd")} –{" "}
+                        {format(dateRange.to, "MMM dd, yyyy")}
+                      </>
+                    ) : (
+                      format(dateRange.from, "MMM dd, yyyy")
+                    )
+                  ) : (
+                    <span className="text-muted-foreground">Filter by date</span>
+                  )}
                   <ChevronDown className="ml-auto h-4 w-4 opacity-50" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="end">
-                <Calendar mode="range" selected={dateRange} onSelect={setDateRange} numberOfMonths={2} />
-              </PopoverContent>
+              <PopoverContent
+  align="end"
+  className="w-auto p-4 rounded-xl shadow-xl border border-border bg-card space-y-4"
+>
+  {/* QUICK PRESETS */}
+  <div className="flex flex-wrap gap-2">
+    <Button
+      size="sm"
+      variant="secondary"
+      className="h-8 text-xs"
+      onClick={() => setDateRange(presets.today())}
+    >
+      Today
+    </Button>
+
+    <Button
+      size="sm"
+      variant="secondary"
+      className="h-8 text-xs"
+      onClick={() => setDateRange(presets.last7())}
+    >
+      Last 7 days
+    </Button>
+
+    <Button
+      size="sm"
+      variant="secondary"
+      className="h-8 text-xs"
+      onClick={() => setDateRange(presets.last30())}
+    >
+      Last 30 days
+    </Button>
+
+    {dateRange && (
+      <Button
+        size="sm"
+        variant="ghost"
+        className="h-8 text-xs text-muted-foreground"
+        onClick={() => setDateRange(undefined)}
+      >
+        Clear
+      </Button>
+    )}
+  </div>
+
+  {/* CALENDAR */}
+  <CleanCalendar
+    mode="range"
+    selected={dateRange}
+    onSelect={setDateRange}
+    numberOfMonths={2}
+  />
+</PopoverContent>
+
             </Popover>
             <Button variant="ghost" size="icon" onClick={() => { setSearchTerm(""); setSelectedAction("ALL"); setDateRange(undefined) }}>
               <RotateCcw className="h-4 w-4" />
