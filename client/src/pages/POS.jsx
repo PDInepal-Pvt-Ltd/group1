@@ -1,5 +1,3 @@
-"use client"
-
 import React, { useState } from "react"
 import { Sidebar } from "@/components/Sidebar"
 import { Card, CardContent } from "@/components/ui/card"
@@ -16,7 +14,7 @@ import { fetchTables } from "@/store/tableSlice"
 import { fetchCategories } from "@/store/categorySlice"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import toast from "react-hot-toast"
-
+import { createOrder } from "@/store/orderSlice"
 export default function POSPage() {
   const dispatch = useDispatch();
   const [selectedTable, setSelectedTable] = useState("")
@@ -96,7 +94,11 @@ export default function POSPage() {
       return
     }
 
-    toast.success("Order has been placed successfully")
+    dispatch(createOrder({
+      tableId: selectedTable,
+      items: cart
+    }))
+
     setCart([])
     setSelectedTable("")
   }
