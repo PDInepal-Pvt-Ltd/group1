@@ -13,7 +13,7 @@ export default function Hero({ onReserveClick, onExploreMenuClick }) {
   const [timeLeft, setTimeLeft] = useState(7200);
   const [currentDishIndex, setCurrentDishIndex] = useState(0);
 const { dailySpecials } = useSelector((state) => state.surplus);
-
+// console.log(dailySpecials)
 const carouselLength = dailySpecials.length;
   const dispatch = useDispatch();
   useEffect(() => {
@@ -152,7 +152,7 @@ const carouselLength = dailySpecials.length;
       </AnimatePresence>
 
       {/* Trending Indicator: Moved to bottom-left */}
-      {!tableId && (
+      {!tableId && dailySpecials.length > 0 && (
         <div className="absolute bottom-10 left-10 hidden lg:flex items-center gap-6 border-l border-border pl-6">
           <div className="text-left">
             <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-amber-500">
