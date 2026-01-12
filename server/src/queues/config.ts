@@ -1,5 +1,8 @@
 export const queueConfig = {
   connection: {
-      url: process.env.REDIS_URL
+      username: process.env.REDIS_USERNAME,
+      password: process.env.REDIS_PASSWORD,
+      host: process.env.REDIS_HOST,
+      port: parseInt(process.env.REDIS_PORT || '10436')
   }
 };   
