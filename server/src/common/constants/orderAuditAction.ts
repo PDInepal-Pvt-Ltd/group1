@@ -1,0 +1,5 @@
+export const ORDER_AUDIT_ACTIONS = {
+  CREATED: 'ORDER_CREATED',
+  UPDATED: 'ORDER_UPDATED',
+  DELETED: 'ORDER_DELETED',
+} as const;   
