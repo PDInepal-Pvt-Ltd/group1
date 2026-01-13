@@ -49,8 +49,10 @@ export class KdsEventService {
         try {
             const lastEvent = await this.kdsEventRepository.getLatestEventForOrder(data.orderId);
             let minutesSpent = 0;
-
+            console.log(data.status)
+console.log(lastEvent?.status)
             const validation = KdsStateMachine.validateTransition(lastEvent?.status, data.status);
+            console.log(validation)
             if (!validation.isValid) {
                 throw new Error(validation.error);
             }
@@ -79,32 +81,48 @@ export class KdsEventService {
     }
 
     async getPerformanceMetrics(days: number): Promise<ServiceResponse<KdsPerformance | null>> {
-        try {
-            const startDate = new Date();
-            startDate.setDate(startDate.getDate() - days);
+    try {
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - days);
 
-            const stats = await this.kdsEventRepository.getPerformanceStats(startDate, new Date());
+        const stats = await this.kdsEventRepository.getPerformanceStats(startDate, new Date());
 
-            const totalCount = stats.reduce((acc, curr) => acc + curr._count.id, 0);
-            const overallAvg = stats.reduce((acc, curr) => acc + (curr._avg.minutesSpent || 0), 0) / (stats.length || 1);
+        // Calculate totals for weighted average
+        let totalCompleted = 0;
+        let totalMinutesSum = 0;
+        let absoluteMax = 0;
 
-            const performance: KdsPerformance = {
-                averagePrepTime: Math.round(overallAvg),
-                totalCompleted: totalCount,
-                longestPrepTime: Math.max(...stats.map(s => s._max.minutesSpent || 0)),
-                efficiencyByActor: stats.map(s => ({
-                    actorId: s.actorId || "System",
-                    avgMinutes: Math.round(s._avg.minutesSpent || 0),
-                    count: s._count.id
-                }))
+        const efficiencyByActor = stats.map(s => {
+            const count = s._count.id;
+            const avg = Number(s._avg.minutesSpent) || 0;
+            const max = Number(s._max.minutesSpent) || 0;
+
+            totalCompleted += count;
+            totalMinutesSum += (avg * count); // Weighted sum
+            if (max > absoluteMax) absoluteMax = max;
+
+            return {
+                actorId: s.actorId || "System",
+                avgMinutes: Math.round(avg),
+                count: count
             };
+        });
 
-            return ServiceResponse.success("Performance stats retrieved", performance, StatusCodes.OK);
-        } catch (error) {
-            logger.error("KDS Metrics Error:", error);
-            return ServiceResponse.failure("Failed to fetch metrics", null, StatusCodes.INTERNAL_SERVER_ERROR);
-        }
+        const overallAvg = totalCompleted > 0 ? (totalMinutesSum / totalCompleted) : 0;
+
+        const performance: KdsPerformance = {
+            averagePrepTime: Math.round(overallAvg),
+            totalCompleted: totalCompleted,
+            longestPrepTime: absoluteMax,
+            efficiencyByActor: efficiencyByActor
+        };
+
+        return ServiceResponse.success("Performance stats retrieved", performance, StatusCodes.OK);
+    } catch (error) {
+        logger.error("KDS Metrics Error:", error);
+        return ServiceResponse.failure("Failed to fetch metrics", null, StatusCodes.INTERNAL_SERVER_ERROR);
     }
+}
 
     async getQueue(): Promise<ServiceResponse<any | null>> {
         try {

@@ -171,7 +171,7 @@ model MenuItem {
   updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
   name        String
-  description String?   @db.VarChar(200)
+  description String?   @db.Text 
   price       Decimal   @db.Decimal(10, 2)
   imageUrl    String?   // prefer URL; keep base64 temporarily if required
   isAvailable Boolean   @default(true)

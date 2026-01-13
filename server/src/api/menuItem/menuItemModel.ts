@@ -13,8 +13,8 @@ export const menuItemSchema = z.object({
     description: z.string().nullable().openapi({ description: "Description of the menu item", example: "A juicy burger with lettuce, tomato, and cheese" }),
     price: z.union([z.string(), z.number()]).transform((val) => new Prisma.Decimal(val)).openapi({ example: 9.99 }),
     imageUrl: z.string().nullable().openapi({ description: "URL of the image for the menu item", example: "https://example.com/burger.jpg" }),
-    isAvailable: z.boolean().openapi({ description: "Whether the menu item is available or not", example: true }),
-    isVeg: z.boolean().openapi({ description: "Whether the menu item is vegetarian or not", example: false }),
+    isAvailable: z.coerce.boolean().openapi({ description: "Whether the menu item is available or not", example: true }),
+    isVeg: z.coerce.boolean().openapi({ description: "Whether the menu item is vegetarian or not", example: false }),
     categoryId: z.string().openapi({ description: "ID of the category to which the menu item belongs", example: "123e4567-e89b-12d3-a456-426655440000" }),
 });
 

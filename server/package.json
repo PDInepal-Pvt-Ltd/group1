@@ -4,8 +4,7 @@
   "description": "<p align=\"center\">\r   <img src=\"https://img.shields.io/badge/Node.js-18%2B-green\" />\r   <img src=\"https://img.shields.io/badge/TypeScript-Ready-blue\" />\r   <img src=\"https://img.shields.io/badge/Prisma-ORM-2D3748?logo=prisma\" />\r   <img src=\"https://img.shields.io/badge/PostgreSQL-Database-336791?logo=postgresql\" />\r   <img src=\"https://img.shields.io/badge/License-MIT-yellow\" />\r </p>",
   "main": "index.js",
   "scripts": {
-    "dev": "node --import=tsx --env-file=.env --watch src/index.ts",
-    "seed": "node --import=tsx --env-file=.env src/seed.ts",
+    "dev": "node --import=tsx --env-file=.env src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "changelog": "npx git-cliff -c .cliff.toml > CHANGELOG.md",
     "postinstall": "prisma generate",

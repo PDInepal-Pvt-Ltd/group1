@@ -20,15 +20,33 @@ export const orderItemSchema = z.object({
     discountAmount: z.union([z.string(), z.number()]).transform((val) => new Prisma.Decimal(val)).openapi({ description: "Discount applied to this item", example: 0 }),
 });
 
-export const CreateOrderItemSchema = orderItemSchema.pick({
-    menuItemId: true,
-    qty: true,
-    notes: true,
-    payerName: true,
-    discountAmount: true,
-    unitPrice: true,
-    subTotal: true,
+
+export const CreateOrderItemSchema = z.object({
+  menuItemId: z.string(),
+  qty: z.number().int().positive(),
+  notes: z.string().nullable().optional(),
+  payerName: z.string().nullable().optional(),
 });
+
+export const CreateOrderSchema = z.object({
+  tableId: z.string(),
+  isQrOrder: z.boolean().optional().default(false),
+  placedBy: z.string().nullable().optional().default(null),
+  qrSession: z.string().nullable().optional().default(null),
+  notes: z.string().nullable().optional().default(null),
+  createdBy: z.string().nullable().optional().default(null),
+  items: z.array(CreateOrderItemSchema).min(1),
+});
+
+export type CalculatedOrderItem = {
+  menuItemId: string;
+  qty: number;
+  unitPrice: Prisma.Decimal;
+  subTotal: Prisma.Decimal;
+  discountAmount: Prisma.Decimal;
+  notes?: string | null;
+  payerName?: string | null;
+};
 
 export const orderSchema = z.object({
     id: z.string().openapi({ description: "Unique identifier for the order", example: "123e4567-e89b-12d3-a456-426655440000" }),
@@ -45,18 +63,6 @@ export const orderSchema = z.object({
     subTotal: z.union([z.string(), z.number()]).refine((val) => !isNaN(Number(val)), { message: "Subtotal must be a number" }).transform((val) => new Prisma.Decimal(val)).openapi({ description: "Order subtotal", example: 19.99 }),
     items: z.array(CreateOrderItemSchema).min(1).openapi({ description: "List of items in the order", example: [{ menuItemId: "123e4567-e89b-12d3-a456-426655440000", qty: 2, unitPrice: 9.99, subTotal: 19.98 }] }),
 });
-
-export const CreateOrderSchema = orderSchema.pick({
-    tableId: true,
-    placedBy: true,
-    qrSession: true,
-    notes: true,
-    createdBy: true,
-    isQrOrder: true,
-    items: true,
-}).extend({
-    items: z.array(CreateOrderItemSchema).min(1).openapi({ description: "List of items to order (minimum 1)", example: [{ menuItemId: "123e4567-e89b-12d3-a456-426655440000", qty: 2, unitPrice: 9.99, subTotal: 19.98, discountAmount: 0, payerName: null, notes: null }] }),
-})
 
 export const UpdateOrderSchema = z.object({
     status: z.enum(OrderStatus).optional(),

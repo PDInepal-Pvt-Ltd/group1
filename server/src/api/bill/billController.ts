@@ -29,8 +29,7 @@ class BillController {
             return handleServiceResponse(ServiceResponse.failure("You are restricted to pay a bill", null, 403), res);
         }
         const billId = req.params.id;
-        const paymentMode = req.body.paymentMode as PaymentMode;
-        const serviceResponse = await billService.confirmPayment(billId, paymentMode, req.user.id);
+        const serviceResponse = await billService.confirmPayment(billId, req.user.id);
         return handleServiceResponse(serviceResponse, res);
     }
 

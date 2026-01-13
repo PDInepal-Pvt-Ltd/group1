@@ -31,8 +31,8 @@ export const surplusMarkSchema = z.object({
     deletedAt: z.date().nullable().openapi({ description: "Date and time when the surplus mark was deleted", example: "2022-01-01T00:00:00.000Z" }),
     menuItemId: z.string().openapi({ description: "Unique identifier for the menu item", example: "123e4567-e89b-12d3-a456-426655440000" }),
     markedBy: z.string().openapi({ description: "Unique identifier for the user who marked the surplus", example: "123e4567-e89b-12d3-a456-426655440000" }),
-    surplusAt: z.date().openapi({ description: "Date and time when the surplus becomes visible", example: "2022-01-01T00:00:00.000Z" }),
-    surplusUntil: z.date().openapi({ description: "Date and time when the sale ends", example: "2022-01-01T00:00:00.000Z" }),
+    surplusAt: z.coerce.date().openapi({ description: "Date and time when the surplus becomes visible", example: "2022-01-01T00:00:00.000Z" }),
+    surplusUntil: z.coerce.date().openapi({ description: "Date and time when the sale ends", example: "2022-01-01T00:00:00.000Z" }),
     discountPct: z.union([z.string(), z.number()]).transform((val) => new Prisma.Decimal(val)).openapi({ description: "Percentage discount applied to the menu item", example: 30.00 }),
     note: z.string().nullable().openapi({ description: "Additional notes about the surplus mark", example: "Limited quantity available" }),
     menuItem: z.object({

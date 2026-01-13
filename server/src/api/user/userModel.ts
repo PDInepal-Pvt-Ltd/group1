@@ -34,7 +34,7 @@ export const LoginUserSchema = userSchema.pick({
 export const UpdateUserSchema = userSchema.pick({
     name: true,
     email: true,
-    password: true,
+    // password: true,
     role: true,
     isActive: true,
 });

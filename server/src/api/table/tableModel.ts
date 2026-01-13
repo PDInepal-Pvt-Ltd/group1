@@ -30,7 +30,7 @@ export const tableSchema = z.object({
     name: z.string().openapi({ description: "Name of the table",example: "Table 1"}),
     seats: z.number().openapi({ description: "Number of seats on the table",example: 4}),
     qrCodeUrl: z.string().nullable().openapi({ description: "URL of the QR code for the table",example: "https://example.com/qr-code/123e4567-e89b-12d3-a456-426655440000"}),
-    status: z.enum(TableStatus).openapi({ description: "Status of the table",example: "AVAILABLE"}),
+    status: z.enum(TableStatus).default(TableStatus.AVAILABLE).openapi({ description: "Status of the table",example: "AVAILABLE"}),
     assignedTo: z.string().nullable().openapi({ description: "ID of the user assigned to the table",example: "123e4567-e89b-12d3-a456-426655440000"}),
 });
 
@@ -38,14 +38,12 @@ export const CreateTableSchema = tableSchema.pick({
     name: true,
     seats: true,
     status: true,
-    assignedTo: true,
 });
 
 export const UpdateTableSchema = tableSchema.pick({
     name: true,
     seats: true,
     status: true,
-    assignedTo: true,
 });
 
 export const TableResponseSchema = tableSchema.pick({

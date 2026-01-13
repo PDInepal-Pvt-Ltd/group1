@@ -1,5 +1,5 @@
 import { StatusCodes } from "http-status-codes";
-import type { CreateOrder, CreateOrderItem, OrderResponse, UpdateOrder } from "./orderModel";
+import type { CalculatedOrderItem, CreateOrder, CreateOrderItem, OrderResponse, UpdateOrder } from "./orderModel";
 import { OrderRepository } from "./orderRepository";
 import { TableRepository } from "../table/tableRepository";
 import { UserRepository } from "../user/userRepository";
@@ -33,17 +33,18 @@ export class OrderService {
 
     async createOrder(data: CreateOrder, actorId?: string): Promise<ServiceResponse<OrderResponse | null>> {
         try {
+            logger.info("creating order...........")
             const table = await this.tableRepository.findById(data.tableId);
 
             if (!table || table.status === TableStatus.RESERVED || table.status === TableStatus.OCCUPIED || table.status === TableStatus.NEEDS_CLEANING) {
                 return ServiceResponse.failure("Requested table is not available", null, StatusCodes.BAD_REQUEST);
             }
-
+            logger.info("actorId", data.createdBy, actorId, data.placedBy)
             let createdBy = data.createdBy ?? actorId;
-
             if (createdBy) {
+                logger.info("created by", createdBy);
                 const user = await this.userRepository.findById(createdBy);
-                if (!user || !["WAITER", "CASHIER"].includes(user.role)) {
+                if (!user || !["WAITER", "CASHIER", "ADMIN"].includes(user.role)) {
                     return ServiceResponse.failure(`Assigned waiter ${data.createdBy} does not exist`, null, StatusCodes.BAD_REQUEST);
                 }
             }
@@ -57,34 +58,41 @@ export class OrderService {
 
             const menuItemMap = new Map(menuItems.map((menuItem) => [menuItem.id, menuItem]));
 
-            const orderItemsData = data.items.map((item) => {
-                const menuItem = menuItemMap.get(item.menuItemId)!;
-                let unitPrice = menuItem.price;
+            const orderItemsData: CalculatedOrderItem[] = data.items.map((item) => {
+                const menuItem = menuItemMap.get(item.menuItemId);
+                if (!menuItem) throw new BadRequestError("Invalid menu item");
+
+                const basePrice = new Prisma.Decimal(menuItem.price);
+
+                let finalUnitPrice = basePrice;
+
                 const activeSurplus = menuItem.surplusMarks?.[0];
                 if (activeSurplus) {
-                    const discountMultiplier = new Prisma.Decimal(1).minus(new Prisma.Decimal(activeSurplus.discountPct).dividedBy(100));
-                    unitPrice = unitPrice.times(discountMultiplier).toDecimalPlaces(2);
-                }
-                const discountAmount = item.discountAmount;
-                const subTotalBeforeDiscount = new Prisma.Decimal(item.qty).times(unitPrice);
-                const subTotalAfterDiscount = subTotalBeforeDiscount.minus(discountAmount);
-                if (subTotalAfterDiscount.lte(0)) {
-                    throw new BadRequestError(`Subtotal after discount for item ${item.menuItemId} is less than or equal to zero`);
+                    const discountMultiplier = new Prisma.Decimal(1).minus(
+                        new Prisma.Decimal(activeSurplus.discountPct).div(100)
+                    );
+                    finalUnitPrice = basePrice.mul(discountMultiplier);
                 }
 
-                if( discountAmount.greaterThan(subTotalBeforeDiscount)) {
-                    throw new BadRequestError(`Discount amount for item ${item.menuItemId} is greater than the subtotal before discount`);
+                const qty = new Prisma.Decimal(item.qty);
+                const subTotal = finalUnitPrice.mul(qty);
+
+                if (subTotal.lte(0)) {
+                    throw new BadRequestError("Invalid order amount");
                 }
+
                 return {
                     menuItemId: item.menuItemId,
                     qty: item.qty,
-                    unitPrice: unitPrice,
-                    subTotal: subTotalAfterDiscount,
+                    unitPrice: finalUnitPrice,
+                    subTotal,
+                    discountAmount: basePrice.minus(finalUnitPrice),
                     notes: item.notes,
                     payerName: item.payerName,
-                    discountAmount: discountAmount,
                 };
             });
+
+
 
             const orderSubTotal = orderItemsData.reduce((acc, item) => acc.plus(item.subTotal), new Prisma.Decimal(0));
 
@@ -141,82 +149,82 @@ export class OrderService {
     }
 
     async updateOrder(orderId: string, data: UpdateOrder, actorId?: string): Promise<ServiceResponse<OrderResponse | null>> {
-    try {
-        const existingOrder = await this.orderRepository.findOrderById(orderId);
-        if (!existingOrder) {
-            return ServiceResponse.failure("Order not found", null, StatusCodes.NOT_FOUND);
-        }
-
-        const terminalStatuses: OrderStatus[] = ['SERVED', 'CANCELLED'];
-        if (terminalStatuses.includes(existingOrder.status)) {
-            return ServiceResponse.failure(`Cannot update an order that is already ${existingOrder.status}`, null, StatusCodes.BAD_REQUEST);
-        }
-
-       let totalAddition = new Prisma.Decimal(0);
-        let processedNewItems: CreateOrderItem[] = [];
-
-       if (data.items && data.items.length > 0) {
-            const menuItems = await this.menuItemRepository.findAvailableByIds(data.items.map(i => i.menuItemId));
-            if (menuItems.length !== data.items.length) {
-                return ServiceResponse.failure("One or more menu items are unavailable", null, StatusCodes.BAD_REQUEST);
+        try {
+            const existingOrder = await this.orderRepository.findOrderById(orderId);
+            if (!existingOrder) {
+                return ServiceResponse.failure("Order not found", null, StatusCodes.NOT_FOUND);
             }
 
-            const itemMap = new Map(menuItems.map(mi => [mi.id, mi]));
+            const terminalStatuses: OrderStatus[] = ['SERVED', 'CANCELLED'];
+            if (terminalStatuses.includes(existingOrder.status)) {
+                return ServiceResponse.failure(`Cannot update an order that is already ${existingOrder.status}`, null, StatusCodes.BAD_REQUEST);
+            }
 
-            processedNewItems = data.items.map(item => {
-                const menu = itemMap.get(item.menuItemId)!;
-                let unitPrice = menu.price;
+            let totalAddition = new Prisma.Decimal(0);
+            let processedNewItems: CalculatedOrderItem[] = [];
 
-                const activeSurplus = menu.surplusMarks?.[0];
-                if (activeSurplus) {
-                    const multiplier = new Prisma.Decimal(1).minus(new Prisma.Decimal(activeSurplus.discountPct).dividedBy(100));
-                    unitPrice = unitPrice.times(multiplier).toDecimalPlaces(2);
+            if (data.items && data.items.length > 0) {
+                const menuItems = await this.menuItemRepository.findAvailableByIds(data.items.map(i => i.menuItemId));
+                if (menuItems.length !== data.items.length) {
+                    return ServiceResponse.failure("One or more menu items are unavailable", null, StatusCodes.BAD_REQUEST);
                 }
 
-                const discount = new Prisma.Decimal(item.discountAmount || 0);
-                const subTotal = new Prisma.Decimal(item.qty).times(unitPrice).minus(discount);
+                const itemMap = new Map(menuItems.map(mi => [mi.id, mi]));
 
-                if (subTotal.lte(0)) throw new BadRequestError(`Invalid pricing for ${menu.id}`);
+                processedNewItems = data.items.map(item => {
+                    const menu = itemMap.get(item.menuItemId)!;
+                    let unitPrice = menu.price;
 
-                totalAddition = totalAddition.plus(subTotal);
+                    const activeSurplus = menu.surplusMarks?.[0];
+                    if (activeSurplus) {
+                        const multiplier = new Prisma.Decimal(1).minus(new Prisma.Decimal(activeSurplus.discountPct).dividedBy(100));
+                        unitPrice = unitPrice.times(multiplier).toDecimalPlaces(2);
+                    }
 
-                return {
-                    ...item,
-                    unitPrice,
-                    subTotal,
-                    discountAmount: discount
-                };
+                    const discount = new Prisma.Decimal(existingOrder.items.find(i => i.menuItemId === item.menuItemId)?.discountAmount || 0);
+                    const subTotal = new Prisma.Decimal(item.qty).times(unitPrice).minus(discount);
+
+                    if (subTotal.lte(0)) throw new BadRequestError(`Invalid pricing for ${menu.id}`);
+
+                    totalAddition = totalAddition.plus(subTotal);
+
+                    return {
+                        ...item,
+                        unitPrice,
+                        subTotal,
+                        discountAmount: discount
+                    };
+                });
+            }
+
+            const updatedOrder = await this.orderRepository.updateOrder(
+                orderId,
+                data,
+                totalAddition,
+                processedNewItems,
+                actorId
+            );
+
+            await this.auditLogQueue.add("createAuditLog", {
+                userId: actorId,
+                action: ORDER_AUDIT_ACTIONS.UPDATED,
+                resourceType: "Order",
+                resourceId: orderId,
+                payload: {
+                    prevStatus: existingOrder.status,
+                    newStatus: data.status,
+                    itemsAdded: processedNewItems.length
+                },
+                ip: null,
+                userAgent: null,
             });
+
+            return ServiceResponse.success("Order updated successfully", updatedOrder, StatusCodes.OK);
+        } catch (error) {
+            logger.error(`Error updating order ${orderId}:`, error);
+            return ServiceResponse.failure("Internal Server Error", null, StatusCodes.INTERNAL_SERVER_ERROR);
         }
-
-        const updatedOrder = await this.orderRepository.updateOrder(
-            orderId,
-            data,
-            totalAddition,
-            processedNewItems,
-            actorId
-        );
-
-        await this.auditLogQueue.add("createAuditLog", {
-            userId: actorId,
-            action: ORDER_AUDIT_ACTIONS.UPDATED,
-            resourceType: "Order",
-            resourceId: orderId,
-           payload: { 
-                prevStatus: existingOrder.status, 
-                newStatus: data.status, 
-                itemsAdded: processedNewItems.length 
-            },
-            ip: null,
-            userAgent: null,
-        });
-
-        return ServiceResponse.success("Order updated successfully", updatedOrder, StatusCodes.OK);
-    } catch (error) {
-        logger.error(`Error updating order ${orderId}:`, error);
-        return ServiceResponse.failure("Internal Server Error", null, StatusCodes.INTERNAL_SERVER_ERROR);
     }
-}
 
     async deleteOrder(orderId: string): Promise<ServiceResponse<OrderResponse | null>> {
         try {

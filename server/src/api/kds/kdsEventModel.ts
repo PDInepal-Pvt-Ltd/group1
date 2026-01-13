@@ -20,7 +20,6 @@ export const CreateKdsEventSchema = kdsEventSchema.pick({
     orderId: true,
     status: true,
     notes: true,
-    actorId: true,
     minutesSpent: true
 })
 

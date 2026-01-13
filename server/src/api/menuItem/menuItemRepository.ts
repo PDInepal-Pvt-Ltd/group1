@@ -76,6 +76,9 @@ export class MenuItemRepository {
                         }
                     }
                 }
+            },
+            where: {
+                deletedAt: null
             }
         });
     }
